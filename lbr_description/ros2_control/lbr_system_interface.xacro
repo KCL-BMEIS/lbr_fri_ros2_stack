@@ -15,7 +15,7 @@
             </xacro:if>
             <xacro:if value="${mode == 'gazebo'}">
                 <hardware>
-                    <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+                    <plugin>ign_ros2_control/IgnitionSystem</plugin>
                 </hardware>
             </xacro:if>
             <xacro:if value="${mode == 'hardware'}">

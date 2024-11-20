@@ -4,8 +4,8 @@
 
         <!-- ros_control-plugin -->
         <gazebo>
-            <plugin name="gz_ros2_control::GazeboSimROS2ControlPlugin"
-                filename="gz_ros2_control-system">
+            <plugin name="ign_ros2_control::IgnitionROS2ControlPlugin"
+                filename="ign_ros2_control-system">
                 <parameters>$(find lbr_ros2_control)/config/lbr_controllers.yaml</parameters>
                 <ros>
                     <namespace>/${robot_name}</namespace>

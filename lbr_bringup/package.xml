@@ -11,7 +11,7 @@
   <buildtool_depend>ament_cmake_python</buildtool_depend>
 
   <exec_depend>controller_manager</exec_depend>
-  <exec_depend>gz_ros2_control</exec_depend>
+  <exec_depend>ign_ros2_control</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
   <exec_depend>lbr_description</exec_depend>
