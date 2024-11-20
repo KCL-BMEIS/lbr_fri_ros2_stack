@@ -54,16 +54,16 @@ MoveIt Servo - Simulation
 
 You can now experiment with
 
-- Modifying the MoveIt Servo parameters in `moveit_servo.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_bringup/config/moveit_servo.yaml>`_:octicon:`link-external`. E.g. the ``robot_link_command_frame`` to change the commanding frame.
+- Modifying the MoveIt Servo parameters in `moveit_servo.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_bringup/config/moveit_servo.yaml>`_:octicon:`link-external`. E.g. the ``robot_link_command_frame`` to change the commanding frame.
 - Connect a joystick or game controller.
-- Or changing the veloctiy scales for this keyboard driver in `forward_keyboard.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_demos/lbr_moveit/config/forward_keyboard.yaml>`_:octicon:`link-external`.
+- Or changing the veloctiy scales for this keyboard driver in `forward_keyboard.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_demos/lbr_moveit/config/forward_keyboard.yaml>`_:octicon:`link-external`.
 
 MoveIt Servo - Hardware
 ~~~~~~~~~~~~~~~~~~~~~~~
 #. Client side configurations:
 
-    #. Configure the ``client_command_mode`` to ``position`` in `lbr_system_config.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_description/ros2_control/lbr_system_config.yaml>`_:octicon:`link-external`
-    #. Set the ``update_rate`` to ``100`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`
+    #. Configure the ``client_command_mode`` to ``position`` in `lbr_system_config.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_description/ros2_control/lbr_system_config.yaml>`_:octicon:`link-external`
+    #. Set the ``update_rate`` to ``100`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`
 
 #. Remote side configurations:
 
@@ -122,8 +122,8 @@ MoveIt via RViz - Hardware
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 #. Client side configurations:
 
-    #. Configure the ``client_command_mode`` to ``position`` in `lbr_system_config.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_description/ros2_control/lbr_system_config.yaml>`_:octicon:`link-external`
-    #. Set the ``update_rate`` to ``100`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`
+    #. Configure the ``client_command_mode`` to ``position`` in `lbr_system_config.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_description/ros2_control/lbr_system_config.yaml>`_:octicon:`link-external`
+    #. Set the ``update_rate`` to ``100`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`
 
 #. Remote side configurations:
 

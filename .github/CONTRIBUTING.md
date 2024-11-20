@@ -13,7 +13,7 @@ Contributions are vital to this project. If you want to contribute a feature / f
 
 1. Open an issue:
   - Explain the issue and your solution
-  - Request a new branch: `dev-<ros_version>-<feature>`, e.g. `dev-rolling-my-new-demo`
+  - Request a new branch: `dev-<ros_version>-<feature>`, e.g. `dev-humble-my-new-demo`
 2. Fork this repository
 3. Create a [pull request](https://github.com/lbr-stack/lbr_fri_ros2_stack/pulls) against `dev-<ros_version>-<feature>`
 

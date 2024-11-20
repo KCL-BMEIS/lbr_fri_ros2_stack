@@ -86,11 +86,11 @@ This procedure applies to all LBRs: ``iiwa7``, ``iiwa14``, ``med7``, and ``med14
 
 #. Manual changes:
 
-    #. Manually add acceleration limits in `joint_limits.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_moveit_config/iiwa7_moveit_config/config/joint_limits.yaml>`_:octicon:`link-external` (not supported in ``URDF``)
+    #. Manually add acceleration limits in `joint_limits.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_moveit_config/iiwa7_moveit_config/config/joint_limits.yaml>`_:octicon:`link-external` (not supported in ``URDF``)
     
-    #. In the `move_group.launch.py <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_moveit_config/iiwa7_moveit_config/launch/move_group.launch.py>`_:octicon:`link-external` use the robot descriotion from ``lbr_description``
+    #. In the `move_group.launch.py <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_moveit_config/iiwa7_moveit_config/launch/move_group.launch.py>`_:octicon:`link-external` use the robot descriotion from ``lbr_description``
     
-    #. In `moveit_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_moveit_config/iiwa7_moveit_config/config/moveit_controllers.yaml>`_:octicon:`link-external` change the ``arm_controller`` to ``joint_trajectory_controller``, as in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external` 
+    #. In `moveit_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_moveit_config/iiwa7_moveit_config/config/moveit_controllers.yaml>`_:octicon:`link-external` change the ``arm_controller`` to ``joint_trajectory_controller``, as in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external` 
 
 Update MoveIt Configuration 
 ---------------------------

@@ -14,8 +14,8 @@ This demo uses the :ref:`lbr_fri_ros2::LBRJointPositionCommandController` and ov
 
 #. Client side configurations:
 
-    #. Configure the ``client_command_mode`` to ``position`` in `lbr_system_config.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_description/ros2_control/lbr_system_config.yaml>`_:octicon:`link-external`
-    #. Set the ``update_rate`` to ``100`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`
+    #. Configure the ``client_command_mode`` to ``position`` in `lbr_system_config.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_description/ros2_control/lbr_system_config.yaml>`_:octicon:`link-external`
+    #. Set the ``update_rate`` to ``100`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`
 
 #. Remote side configurations:
 
@@ -38,7 +38,7 @@ This demo uses the :ref:`lbr_fri_ros2::LBRJointPositionCommandController` and ov
             ctrl:=lbr_joint_position_command_controller \
             model:=iiwa7 # [iiwa7, iiwa14, med7, med14]
 
-#. Run the `joint_sine_overlay <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_demos/lbr_demos_py/lbr_demos_py/joint_sine_overlay.py>`_:octicon:`link-external` node:
+#. Run the `joint_sine_overlay <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_demos/lbr_demos_py/lbr_demos_py/joint_sine_overlay.py>`_:octicon:`link-external` node:
 
     .. code-block:: bash
 
@@ -60,7 +60,7 @@ Simulation
             ctrl:=joint_trajectory_controller \
             model:=iiwa7 # [iiwa7, iiwa14, med7, med14]
 
-#. Run the `joint_trajectory_client <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_demos/lbr_demos_py/lbr_demos_py/joint_trajectory_client.py>`_:octicon:`link-external`:
+#. Run the `joint_trajectory_client <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_demos/lbr_demos_py/lbr_demos_py/joint_trajectory_client.py>`_:octicon:`link-external`:
 
     .. code-block:: bash
 
@@ -72,8 +72,8 @@ Hardware
 ~~~~~~~~
 #. Client side configurations:
 
-    #. Configure the ``client_command_mode`` to ``position`` in `lbr_system_config.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_description/ros2_control/lbr_system_config.yaml>`_:octicon:`link-external`
-    #. Set the ``update_rate`` to ``100`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`
+    #. Configure the ``client_command_mode`` to ``position`` in `lbr_system_config.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_description/ros2_control/lbr_system_config.yaml>`_:octicon:`link-external`
+    #. Set the ``update_rate`` to ``100`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`
 
 #. Remote side configurations:
 
@@ -96,8 +96,8 @@ This demo uses the :ref:`lbr_fri_ros2::LBRTorqueCommandController` and overlays 
 
 #. Client side configurations:
 
-    #. Configure the ``client_command_mode`` to ``torque`` in `lbr_system_config.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_description/ros2_control/lbr_system_config.yaml>`_:octicon:`link-external`
-    #. Set the ``update_rate`` to ``500`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`
+    #. Configure the ``client_command_mode`` to ``torque`` in `lbr_system_config.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_description/ros2_control/lbr_system_config.yaml>`_:octicon:`link-external`
+    #. Set the ``update_rate`` to ``500`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`
 
 #. Remote side configurations:
 
@@ -120,7 +120,7 @@ This demo uses the :ref:`lbr_fri_ros2::LBRTorqueCommandController` and overlays 
             ctrl:=lbr_torque_command_controller \
             model:=iiwa7 # [iiwa7, iiwa14, med7, med14]
 
-#. Run the `torque_sine_overlay <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_demos/lbr_demos_py/lbr_demos_py/torque_sine_overlay.py>`_:octicon:`link-external` node:
+#. Run the `torque_sine_overlay <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_demos/lbr_demos_py/lbr_demos_py/torque_sine_overlay.py>`_:octicon:`link-external` node:
 
     .. code-block:: bash
 
@@ -134,8 +134,8 @@ This demo uses the :ref:`lbr_fri_ros2::LBRWrenchCommandController` and overlays 
 
 #. Client side configurations:
 
-    #. Configure the ``client_command_mode`` to ``wrench`` in `lbr_system_config.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_description/ros2_control/lbr_system_config.yaml>`_:octicon:`link-external`
-    #. Set the ``update_rate`` to ``500`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`
+    #. Configure the ``client_command_mode`` to ``wrench`` in `lbr_system_config.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_description/ros2_control/lbr_system_config.yaml>`_:octicon:`link-external`
+    #. Set the ``update_rate`` to ``500`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`
 
 #. Remote side configurations:
 
@@ -158,7 +158,7 @@ This demo uses the :ref:`lbr_fri_ros2::LBRWrenchCommandController` and overlays 
             ctrl:=lbr_wrench_command_controller \
             model:=iiwa7 # [iiwa7, iiwa14, med7, med14]
 
-#. Run the `wrench_sine_overlay <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_demos/lbr_demos_py/lbr_demos_py/wrench_sine_overlay.py>`_:octicon:`link-external` node:
+#. Run the `wrench_sine_overlay <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_demos/lbr_demos_py/lbr_demos_py/wrench_sine_overlay.py>`_:octicon:`link-external` node:
 
     .. code-block:: bash
 

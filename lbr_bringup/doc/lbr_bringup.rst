@@ -36,7 +36,7 @@ Launch Files
 ------------
 Mock Setup
 ~~~~~~~~~~
-Useful for running a physics-free simulation of the system. This launch file will (see `mock.launch.py <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_bringup/launch/mock.launch.py>`_:octicon:`link-external`):
+Useful for running a physics-free simulation of the system. This launch file will (see `mock.launch.py <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_bringup/launch/mock.launch.py>`_:octicon:`link-external`):
 
 #. Run the ``robot_state_publisher``
 #. Run the ``ros2_control_node`` with mock components as loaded from ``robot_description``
@@ -52,7 +52,7 @@ Useful for running a physics-free simulation of the system. This launch file wil
 
 Gazebo Simulation
 ~~~~~~~~~~~~~~~~~
-Useful for running a physics simulation the the system. This launch file will will (see `gazebo.launch.py <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_bringup/launch/gazebo.launch.py>`_:octicon:`link-external`):
+Useful for running a physics simulation the the system. This launch file will will (see `gazebo.launch.py <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_bringup/launch/gazebo.launch.py>`_:octicon:`link-external`):
 
 #. Start the ``robot_state_publisher``
 #. Start the ``Gazebo`` simulation
@@ -90,7 +90,7 @@ Hardware
 
 #. Launch file:
 
-    This launch file will (see `hardware.launch.py <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_bringup/launch/hardware.launch.py>`_:octicon:`link-external`):
+    This launch file will (see `hardware.launch.py <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_bringup/launch/hardware.launch.py>`_:octicon:`link-external`):
 
     #. Run the ``robot_state_publisher``
     #. Run the ``ros2_control_node`` with the ``lbr_fri_ros2::SystemInterface`` plugin from :doc:`lbr_ros2_control <../../lbr_ros2_control/doc/lbr_ros2_control>` as loaded from ``robot_description`` (which will attempt to establish a connection to the real robot).
@@ -106,7 +106,7 @@ Hardware
 
 RViz
 ~~~~
-This launch file will spin up ``RViz`` for visualization. It will (see `rviz.launch.py <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_bringup/launch/rviz.launch.py>`_:octicon:`link-external`):
+This launch file will spin up ``RViz`` for visualization. It will (see `rviz.launch.py <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_bringup/launch/rviz.launch.py>`_:octicon:`link-external`):
 
 #. Read ``RViz`` configurations.
 #. Run ``RViz``.
@@ -144,7 +144,7 @@ Mixins
 ------
 The ``lbr_bringup`` package makes heavy use of mixins. Mixins are simply state-free classes with static methods. They are a convenient way of writing launch files.
 
-The below shows an example of the `rviz.launch.py <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_bringup/launch/rviz.launch.py>`_:octicon:`link-external` file:
+The below shows an example of the `rviz.launch.py <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_bringup/launch/rviz.launch.py>`_:octicon:`link-external` file:
 
 .. code:: python
 
@@ -183,5 +183,5 @@ Troubleshooting
 ---------------
 Noisy Execution
 ~~~~~~~~~~~~~~~
-- Frequency: Make sure the ``ros2_control_node`` frequency and the ``FRI send period`` are compatible, consider changing ``update_rate`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/rolling/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`. 
+- Frequency: Make sure the ``ros2_control_node`` frequency and the ``FRI send period`` are compatible, consider changing ``update_rate`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/tree/humble/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`. 
 - Realtime priority: Set real time priority in ``code /etc/security/limits.conf``, add the line: ``user - rtprio 99``, where user is your username.

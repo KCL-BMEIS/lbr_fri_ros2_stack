@@ -10,4 +10,4 @@ repositories:
   lbr_fri_ros2_stack:
     type: git
     url: https://github.com/lbr-stack/lbr_fri_ros2_stack
-    version: rolling
+    version: humble

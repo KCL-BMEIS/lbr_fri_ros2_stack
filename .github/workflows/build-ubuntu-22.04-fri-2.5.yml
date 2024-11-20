@@ -1,8 +1,8 @@
-name: ubuntu-24.04-fri-1.14
+name: build-ubuntu-22.04-fri-2.5
 on:
   pull_request:
     branches:
-      - rolling
+      - humble
   workflow_dispatch:
   schedule:
     - cron: "0 0 * * 0"
@@ -11,5 +11,5 @@ jobs:
   build:
     uses: ./.github/workflows/build.yml
     with:
-      os: ubuntu-24.04
-      fri_version: 1.14
+      os: ubuntu-22.04
+      fri_version: 2.5
