@@ -7,7 +7,7 @@
 
 #include "rclcpp/logger.hpp"
 #include "rclcpp/logging.hpp"
-#include "realtime_tools/thread_priority.hpp"
+#include "realtime_tools/realtime_helpers.hpp"
 
 #include "lbr_fri_ros2/formatting.hpp"
 

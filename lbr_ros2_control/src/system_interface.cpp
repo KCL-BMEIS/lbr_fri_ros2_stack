@@ -399,10 +399,6 @@ bool SystemInterface::parse_parameters_(const hardware_interface::HardwareInfo &
                    info_.hardware_parameters["open_loop"].begin(),
                    ::tolower); // convert to lower case
     parameters_.open_loop = info_.hardware_parameters["open_loop"] == "true";
-    std::transform(info_.hardware_parameters["pid_antiwindup"].begin(),
-                   info_.hardware_parameters["pid_antiwindup"].end(),
-                   info_.hardware_parameters["pid_antiwindup"].begin(),
-                   ::tolower); // convert to lower case
     parameters_.joint_position_tau = std::stod(info_.hardware_parameters["joint_position_tau"]);
     parameters_.command_guard_variant = system_info.hardware_parameters.at("command_guard_variant");
     parameters_.external_torque_tau = std::stod(info_.hardware_parameters["external_torque_tau"]);

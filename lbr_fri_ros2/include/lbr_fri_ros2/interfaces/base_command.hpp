@@ -38,6 +38,7 @@ public:
   void log_info() const;
 
 protected:
+  bool command_initialized_;
   std::unique_ptr<CommandGuard> command_guard_;
   JointExponentialFilterArray joint_position_filter_;
   idl_command_t command_, command_target_;
