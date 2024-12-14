@@ -228,12 +228,6 @@ controller_interface::CallbackReturn SystemInterface::on_activate(const rclcpp_l
   RCLCPP_INFO_STREAM(rclcpp::get_logger(LOGGER_NAME), lbr_fri_ros2::ColorScheme::OKGREEN
                                                           << "Robot connected"
                                                           << lbr_fri_ros2::ColorScheme::ENDC);
-  RCLCPP_INFO_STREAM(rclcpp::get_logger(LOGGER_NAME),
-                     "Control mode '"
-                         << lbr_fri_ros2::EnumMaps::control_mode_map(
-                                async_client_ptr_->get_state_interface()->get_state().control_mode)
-                                .c_str()
-                         << "'");
   RCLCPP_INFO(rclcpp::get_logger(LOGGER_NAME), "Sample time %.3f s / %.1f Hz",
               async_client_ptr_->get_state_interface()->get_state().sample_time,
               1. / async_client_ptr_->get_state_interface()->get_state().sample_time);

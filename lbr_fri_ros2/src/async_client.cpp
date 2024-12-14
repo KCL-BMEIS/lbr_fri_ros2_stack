@@ -67,7 +67,19 @@ void AsyncClient::onStateChange(KUKA::FRI::ESessionState old_state,
   // initialize command
   state_interface_ptr_->set_state(robotState());
   command_interface_ptr_->init_command(state_interface_ptr_->get_state());
+}
 
+void AsyncClient::monitor() { state_interface_ptr_->set_state(robotState()); };
+
+void AsyncClient::waitForCommand() {
+  KUKA::FRI::LBRClient::waitForCommand();
+  state_interface_ptr_->set_state(robotState());
+  command_interface_ptr_->init_command(state_interface_ptr_->get_state());
+  command_interface_ptr_->buffered_command_to_fri(robotCommand(),
+                                                  state_interface_ptr_->get_state());
+}
+
+void AsyncClient::command() {
   // if robot is in impedance or Cartesian impedance control mode, override open_loop_ to false
   // also refer to https://github.com/lbr-stack/lbr_fri_ros2_stack/issues/226
   auto control_mode = robotState().getControlMode();
@@ -84,19 +96,7 @@ void AsyncClient::onStateChange(KUKA::FRI::ESessionState old_state,
       open_loop_ = false;
     }
   }
-}
 
-void AsyncClient::monitor() { state_interface_ptr_->set_state(robotState()); };
-
-void AsyncClient::waitForCommand() {
-  KUKA::FRI::LBRClient::waitForCommand();
-  state_interface_ptr_->set_state(robotState());
-  command_interface_ptr_->init_command(state_interface_ptr_->get_state());
-  command_interface_ptr_->buffered_command_to_fri(robotCommand(),
-                                                  state_interface_ptr_->get_state());
-}
-
-void AsyncClient::command() {
   if (open_loop_) {
     state_interface_ptr_->set_state_open_loop(robotState(),
                                               command_interface_ptr_->get_command().joint_position);
