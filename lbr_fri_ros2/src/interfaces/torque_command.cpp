@@ -17,25 +17,34 @@ void TorqueCommandInterface::buffered_command_to_fri(fri_command_t_ref command,
                         ColorScheme::ERROR << err.c_str() << ColorScheme::ENDC);
     throw std::runtime_error(err);
   }
-  if (std::any_of(command_target_.joint_position.cbegin(), command_target_.joint_position.cend(),
-                  [](const double &v) { return std::isnan(v); }) ||
-      std::any_of(command_target_.torque.cbegin(), command_target_.torque.cend(),
-                  [](const double &v) { return std::isnan(v); })) {
-    this->init_command(state);
+
+  if (!joint_position_filter_.is_initialized()) {
+    joint_position_filter_.initialize(state.sample_time);
   }
+
+  if (!command_initialized_) {
+    std::string err = "Uninitialized command.";
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME()),
+                        ColorScheme::ERROR << err.c_str() << ColorScheme::ENDC);
+    throw std::runtime_error(err);
+  }
+
+  if (!std::any_of(command_target_.joint_position.cbegin(), command_target_.joint_position.cend(),
+                   [](const double &v) { return std::isnan(v); }) &&
+      !std::any_of(command_target_.torque.cbegin(), command_target_.torque.cend(),
+                   [](const double &v) { return std::isnan(v); })) {
+    // write command_target_ to command_ (with exponential smooth on joint positions), else use
+    // internal command_
+    joint_position_filter_.compute(command_target_.joint_position, command_.joint_position);
+    command_.torque = command_target_.torque;
+  }
+
   if (!command_guard_) {
     std::string err = "Uninitialized command guard.";
     RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME()),
                         ColorScheme::ERROR << err.c_str() << ColorScheme::ENDC);
     throw std::runtime_error(err);
   }
-
-  // exponential smooth
-  if (!joint_position_filter_.is_initialized()) {
-    joint_position_filter_.initialize(state.sample_time);
-  }
-  joint_position_filter_.compute(command_target_.joint_position, command_.joint_position);
-  command_.torque = command_target_.torque;
 
   // validate
   if (!command_guard_->is_valid_command(command_, state)) {
