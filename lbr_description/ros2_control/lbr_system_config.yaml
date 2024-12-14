@@ -8,20 +8,21 @@ hardware:
   remote_host: INADDR_ANY # the expected robot IP address. INADDR_ANY will accept any incoming connection
   rt_prio: 80 # real-time priority for the control loop
   # exponential moving average time constant for joint position commands [s]:
-  #   Set tau > robot sample time for more smoothing on the commands
-  #   Set tau << robot sample time for no smoothing on the commands
+  #   set tau > robot sample time for more smoothing on the commands
+  #   set tau << robot sample time for no smoothing on the commands
   joint_position_tau: 0.04
   command_guard_variant: default # if requested position / velocities beyond limits, CommandGuard will be triggered and shut the connection. Available: [default, safe_stop]
   # exponential moving average time constant for external joint torque measurements [s]:
-  #   Set tau > robot sample time for more smoothing on the external torque measurements
-  #   Set tau << robot sample time for no smoothing on the external torque measurements
+  #   set tau > robot sample time for more smoothing on the external torque measurements
+  #   set tau << robot sample time for no smoothing on the external torque measurements
   external_torque_tau: 0.04
   # exponential moving average time constant for joint torque measurements [s]:
-  #   Set tau > robot sample time for more smoothing on the raw torque measurements
-  #   Set tau << robot sample time for no smoothing on the raw torque measurements
+  #   set tau > robot sample time for more smoothing on the raw torque measurements
+  #   set tau << robot sample time for no smoothing on the raw torque measurements
   measured_torque_tau: 0.04
-  open_loop: true # KUKA works the best in open_loop control mode
-
+  # for position control, LBR works best in open_loop control mode
+  # note that open_loop is overridden to false if LBR is in impedance or Cartesian impedance control mode
+  open_loop: true
 estimated_ft_sensor: # estimates the external force-torque from the external joint torque values
   enabled: true # whether to enable the force-torque estimation
   update_rate: 100 # update rate for the force-torque estimation [Hz] (less or equal to controller manager update rate)
