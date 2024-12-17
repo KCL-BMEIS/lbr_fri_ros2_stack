@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<robot name="lbr_dual_arm" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <!-- include the lbr iiwa macro -->
+    <xacro:include filename="$(find lbr_description)/urdf/iiwa7/iiwa7_description.xacro" />
+
+    <!-- add an arguent to allow for mock / hardware / gazebo -->
+    <xacro:arg name="mode" default="mock" />
+
+    <!-- add a base / floating link -->
+    <link name="base_link" />
+
+    <!-- add joints that connect the robots -->
+    <joint name="lbr_one_base_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="lbr_one_link_0" />
+    </joint>
+
+    <joint name="lbr_two_base_joint" type="fixed">
+        <parent link="base_link" />
+        <child link="lbr_two_link_0" />
+    </joint>
+
+    <!-- add robot 1 via macro, note that different lbr_one_system_config.yaml are used (to
+    configure port id) -->
+    <xacro:iiwa7
+        robot_name="lbr_one"
+        mode="$(arg mode)"
+        system_config_path="$(find lbr_dual_arm_description)/ros2_control/lbr_one_system_config.yaml" />
+
+    <!-- add robot 2 via macro -->
+    <xacro:iiwa7
+        robot_name="lbr_two"
+        mode="$(arg mode)"
+        system_config_path="$(find lbr_dual_arm_description)/ros2_control/lbr_two_system_config.yaml" />
+</robot>

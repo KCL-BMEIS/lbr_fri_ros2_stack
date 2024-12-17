@@ -1,0 +1,50 @@
+# Use of /** so that the configurations hold for controller
+# managers regardless of their namespace. Usefull in multi-robot setups.
+/**/controller_manager:
+  ros__parameters:
+    update_rate: 100
+
+    # ROS 2 control broadcasters
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    # # LBR ROS 2 control broadcasters
+    # lbr_state_broadcaster:
+    #   type: lbr_ros2_control/LBRStateBroadcaster
+
+    # ROS 2 control controllers
+    joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+# # LBR ROS 2 control broadcasters
+# /**/lbr_state_broadcaster:
+#   ros__parameters:
+#     robot_name: lbr
+
+# ROS 2 control controllers
+/**/joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      # robot one
+      - lbr_one_A1
+      - lbr_one_A2
+      - lbr_one_A3
+      - lbr_one_A4
+      - lbr_one_A5
+      - lbr_one_A6
+      - lbr_one_A7
+      # robot two
+      - lbr_two_A1
+      - lbr_two_A2
+      - lbr_two_A3
+      - lbr_two_A4
+      - lbr_two_A5
+      - lbr_two_A6
+      - lbr_two_A7
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    state_publish_rate: 50.0
+    action_monitor_rate: 20.0
