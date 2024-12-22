@@ -19,8 +19,8 @@ hardware:
   open_loop: true # KUKA works the best in open_loop control mode
 
 estimated_ft_sensor: # estimates the external force-torque from the external joint torque values
-  chain_root: link_0
-  chain_tip: link_ee
+  chain_root: base_link
+  chain_tip: link_tool
   damping: 0.2 # damping factor for the pseudo-inverse of the Jacobian
   force_x_th: 2.0 # x-force threshold. Only if the force exceeds this value, the force will be considered
   force_y_th: 2.0 # y-force threshold. Only if the force exceeds this value, the force will be considered

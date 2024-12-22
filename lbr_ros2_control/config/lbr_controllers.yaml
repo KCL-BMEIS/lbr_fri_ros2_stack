@@ -2,7 +2,7 @@
 # managers regardless of their namespace. Usefull in multi-robot setups.
 /**/controller_manager:
   ros__parameters:
-    update_rate: 200
+    update_rate: 1000
 
     # ROS 2 control broadcasters
     joint_state_broadcaster:
@@ -38,7 +38,7 @@
 
 /**/force_torque_broadcaster:
   ros__parameters:
-    frame_id: lbr/link_ee # namespace: https://github.com/ros2/rviz/issues/1103
+    frame_id: lbr/link_tool # namespace: https://github.com/ros2/rviz/issues/1103
     sensor_name: estimated_ft_sensor
 
 /**/joint_trajectory_controller:
