@@ -26,6 +26,7 @@ SystemInterface::on_init(const hardware_interface::HardwareInfo &system_info) {
   pid_parameters.i_max = parameters_.pid_i_max;
   pid_parameters.i_min = parameters_.pid_i_min;
   pid_parameters.antiwindup = parameters_.pid_antiwindup;
+
   for (std::size_t idx = 0; idx < system_info.joints.size(); ++idx) {
     command_guard_parameters.joint_names[idx] = system_info.joints[idx].name;
     command_guard_parameters.max_positions[idx] =
@@ -105,7 +106,8 @@ SystemInterface::on_init(const hardware_interface::HardwareInfo &system_info) {
 
 std::vector<hardware_interface::StateInterface> SystemInterface::export_state_interfaces() {
   std::vector<hardware_interface::StateInterface> state_interfaces;
-  // state interfaces of type double
+
+  // 关节状态接口
   for (std::size_t i = 0; i < info_.joints.size(); ++i) {
     state_interfaces.emplace_back(info_.joints[i].name, hardware_interface::HW_IF_POSITION,
                                   &hw_lbr_state_.measured_joint_position[i]);
@@ -127,18 +129,16 @@ std::vector<hardware_interface::StateInterface> SystemInterface::export_state_in
     state_interfaces.emplace_back(info_.joints[i].name, HW_IF_IPO_JOINT_POSITION,
                                   &hw_lbr_state_.ipo_joint_position[i]);
 
-    // additional velocity state interface
     state_interfaces.emplace_back(info_.joints[i].name, hardware_interface::HW_IF_VELOCITY,
                                   &hw_velocity_[i]);
   }
 
+  // 辅助传感器状态接口
   const auto &auxiliary_sensor = info_.sensors[0];
   state_interfaces.emplace_back(auxiliary_sensor.name, HW_IF_SAMPLE_TIME,
                                 &hw_lbr_state_.sample_time);
   state_interfaces.emplace_back(auxiliary_sensor.name, HW_IF_TRACKING_PERFORMANCE,
                                 &hw_lbr_state_.tracking_performance);
-
-  // state interfaces that require cast
   state_interfaces.emplace_back(auxiliary_sensor.name, HW_IF_SESSION_STATE, &hw_session_state_);
   state_interfaces.emplace_back(auxiliary_sensor.name, HW_IF_CONNECTION_QUALITY,
                                 &hw_connection_quality_);
@@ -149,12 +149,11 @@ std::vector<hardware_interface::StateInterface> SystemInterface::export_state_in
                                 &hw_client_command_mode_);
   state_interfaces.emplace_back(auxiliary_sensor.name, HW_IF_OVERLAY_TYPE, &hw_overlay_type_);
   state_interfaces.emplace_back(auxiliary_sensor.name, HW_IF_CONTROL_MODE, &hw_control_mode_);
-
   state_interfaces.emplace_back(auxiliary_sensor.name, HW_IF_TIME_STAMP_SEC, &hw_time_stamp_sec_);
   state_interfaces.emplace_back(auxiliary_sensor.name, HW_IF_TIME_STAMP_NANO_SEC,
                                 &hw_time_stamp_nano_sec_);
 
-  // additional force-torque state interface
+  // 力矩传感器状态接口
   const auto &estimated_ft_sensor = info_.sensors[1];
   state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_FORCE_X, &hw_ft_[0]);
   state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_FORCE_Y, &hw_ft_[1]);
@@ -163,11 +162,27 @@ std::vector<hardware_interface::StateInterface> SystemInterface::export_state_in
   state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_TORQUE_Y, &hw_ft_[4]);
   state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_TORQUE_Z, &hw_ft_[5]);
 
+  // 添加 I/O 状态接口
+  for (size_t i = 0; i < boolean_io_.size(); ++i) {
+    state_interfaces.emplace_back("boolean_io", "boolean_state_" + std::to_string(i),
+                                  &boolean_io_double_buffer_[i]);
+  }
+  for (size_t i = 0; i < digital_io_.size(); ++i) {
+    state_interfaces.emplace_back("digital_io", "digital_state_" + std::to_string(i),
+                                  reinterpret_cast<double*>(&digital_io_[i]));
+  }
+  for (size_t i = 0; i < analog_io_.size(); ++i) {
+    state_interfaces.emplace_back("analog_io", "analog_state_" + std::to_string(i),
+                                  &analog_io_[i]);
+  }
+
   return state_interfaces;
 }
 
 std::vector<hardware_interface::CommandInterface> SystemInterface::export_command_interfaces() {
   std::vector<hardware_interface::CommandInterface> command_interfaces;
+
+  // 关节命令接口
   for (std::size_t i = 0; i < info_.joints.size(); ++i) {
     command_interfaces.emplace_back(info_.joints[i].name, hardware_interface::HW_IF_POSITION,
                                     &hw_lbr_command_.joint_position[i]);
@@ -176,7 +191,7 @@ std::vector<hardware_interface::CommandInterface> SystemInterface::export_comman
                                     &hw_lbr_command_.torque[i]);
   }
 
-  // Cartesian impedance control command interfaces
+  // 力矩传感器命令接口
   const auto &wrench = info_.gpios[0];
   command_interfaces.emplace_back(wrench.name, HW_IF_FORCE_X, &hw_lbr_command_.wrench[0]);
   command_interfaces.emplace_back(wrench.name, HW_IF_FORCE_Y, &hw_lbr_command_.wrench[1]);
@@ -184,6 +199,21 @@ std::vector<hardware_interface::CommandInterface> SystemInterface::export_comman
   command_interfaces.emplace_back(wrench.name, HW_IF_TORQUE_X, &hw_lbr_command_.wrench[3]);
   command_interfaces.emplace_back(wrench.name, HW_IF_TORQUE_Y, &hw_lbr_command_.wrench[4]);
   command_interfaces.emplace_back(wrench.name, HW_IF_TORQUE_Z, &hw_lbr_command_.wrench[5]);
+
+  // 添加 I/O 命令接口
+  for (size_t i = 0; i < boolean_io_.size(); ++i) {
+    command_interfaces.emplace_back("boolean_io", "boolean_command_" + std::to_string(i),
+                                    &boolean_io_double_buffer_[i]);
+  }
+  for (size_t i = 0; i < digital_io_.size(); ++i) {
+    command_interfaces.emplace_back("digital_io", "digital_command_" + std::to_string(i),
+                                    reinterpret_cast<double*>(&digital_io_[i]));
+  }
+  for (size_t i = 0; i < analog_io_.size(); ++i) {
+    command_interfaces.emplace_back("analog_io", "analog_command_" + std::to_string(i),
+                                    &analog_io_[i]);
+  }
+
   return command_interfaces;
 }
 
@@ -306,7 +336,24 @@ hardware_interface::return_type SystemInterface::read(const rclcpp::Time & /*tim
   // additional force-torque state interface
   ft_estimator_ptr_->compute(hw_lbr_state_.measured_joint_position, hw_lbr_state_.external_torque,
                              hw_ft_, ft_parameters_.damping);
-  return hardware_interface::return_type::OK;
+
+  // 从硬件读取 boolean_io, digital_io, analog_io 数据
+    try {
+        for (size_t i = 0; i < boolean_io_.size(); ++i) {
+            boolean_io_double_buffer_[i] = static_cast<double>(async_client_ptr_->read_boolean_io(i));
+        }
+        for (size_t i = 0; i < digital_io_.size(); ++i) {
+            digital_io_[i] = async_client_ptr_->read_digital_io(i);
+        }
+        for (size_t i = 0; i < analog_io_.size(); ++i) {
+            analog_io_[i] = async_client_ptr_->read_analog_io(i);
+        }
+    } catch (const std::exception &e) {
+        RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME), "Error reading I/O data: " << e.what());
+        return hardware_interface::return_type::ERROR;
+    }
+
+    return hardware_interface::return_type::OK;
 }
 
 hardware_interface::return_type SystemInterface::write(const rclcpp::Time & /*time*/,
@@ -314,16 +361,38 @@ hardware_interface::return_type SystemInterface::write(const rclcpp::Time & /*ti
   if (hw_session_state_ != KUKA::FRI::COMMANDING_ACTIVE) {
     return hardware_interface::return_type::OK;
   }
+
+  // 1. 写入机器人控制命令（保持原有逻辑）
   async_client_ptr_->get_command_interface()->buffer_command_target(hw_lbr_command_);
-  return hardware_interface::return_type::OK;
+
+  // 向硬件写入 boolean_io, digital_io, analog_io 数据
+    try {
+        for (size_t i = 0; i < boolean_io_.size(); ++i) {
+            async_client_ptr_->write_boolean_io(i, static_cast<bool>(boolean_io_double_buffer_[i]));
+        }
+        for (size_t i = 0; i < digital_io_.size(); ++i) {
+            async_client_ptr_->write_digital_io(i, digital_io_[i]);
+        }
+        for (size_t i = 0; i < analog_io_.size(); ++i) {
+            async_client_ptr_->write_analog_io(i, analog_io_[i]);
+        }
+    } catch (const std::exception &e) {
+        RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME), "Error writing I/O data: " << e.what());
+        return hardware_interface::return_type::ERROR;
+    }
+
+    return hardware_interface::return_type::OK;
 }
+
 
 bool SystemInterface::parse_parameters_(const hardware_interface::HardwareInfo &system_info) {
   try {
+    // 原有参数解析逻辑
     parameters_.fri_client_sdk_major_version =
         std::stoul(system_info.hardware_parameters.at("fri_client_sdk_major_version"));
     parameters_.fri_client_sdk_minor_version =
         std::stoul(system_info.hardware_parameters.at("fri_client_sdk_minor_version"));
+
     if (parameters_.fri_client_sdk_major_version != FRI_CLIENT_VERSION_MAJOR) {
       RCLCPP_ERROR_STREAM(
           rclcpp::get_logger(LOGGER_NAME),
@@ -334,6 +403,8 @@ bool SystemInterface::parse_parameters_(const hardware_interface::HardwareInfo &
               << lbr_fri_ros2::ColorScheme::ENDC);
       return false;
     }
+
+    // Client command mode
     std::string client_command_mode = system_info.hardware_parameters.at("client_command_mode");
     if (client_command_mode == "position") {
 #if FRI_CLIENT_VERSION_MAJOR == 1
@@ -351,11 +422,13 @@ bool SystemInterface::parse_parameters_(const hardware_interface::HardwareInfo &
           rclcpp::get_logger(LOGGER_NAME),
           lbr_fri_ros2::ColorScheme::ERROR
               << "Expected client_command_mode 'position', 'torque' or 'wrench', got '"
-              << lbr_fri_ros2::ColorScheme::BOLD << parameters_.client_command_mode << "'"
+              << lbr_fri_ros2::ColorScheme::BOLD << client_command_mode << "'"
               << lbr_fri_ros2::ColorScheme::ENDC);
       return false;
     }
-    parameters_.port_id = std::stoul(info_.hardware_parameters["port_id"]);
+
+    // Port ID
+    parameters_.port_id = std::stoul(system_info.hardware_parameters.at("port_id"));
     if (parameters_.port_id < 30200 || parameters_.port_id > 30209) {
       RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
                           lbr_fri_ros2::ColorScheme::ERROR
@@ -364,37 +437,83 @@ bool SystemInterface::parse_parameters_(const hardware_interface::HardwareInfo &
                               << lbr_fri_ros2::ColorScheme::ENDC);
       return false;
     }
-    info_.hardware_parameters["remote_host"] == "INADDR_ANY"
+
+    // Remote host
+    system_info.hardware_parameters.at("remote_host") == "INADDR_ANY"
         ? parameters_.remote_host = NULL
-        : parameters_.remote_host = info_.hardware_parameters["remote_host"].c_str();
-    parameters_.rt_prio = std::stoul(info_.hardware_parameters["rt_prio"]);
-    std::transform(info_.hardware_parameters["open_loop"].begin(),
-                   info_.hardware_parameters["open_loop"].end(),
-                   info_.hardware_parameters["open_loop"].begin(), ::tolower);
-    parameters_.open_loop = info_.hardware_parameters["open_loop"] == "true";
-    std::transform(info_.hardware_parameters["pid_antiwindup"].begin(),
-                   info_.hardware_parameters["pid_antiwindup"].end(),
-                   info_.hardware_parameters["pid_antiwindup"].begin(), ::tolower);
-    parameters_.pid_p = std::stod(info_.hardware_parameters["pid_p"]);
-    parameters_.pid_i = std::stod(info_.hardware_parameters["pid_i"]);
-    parameters_.pid_d = std::stod(info_.hardware_parameters["pid_d"]);
-    parameters_.pid_i_max = std::stod(info_.hardware_parameters["pid_i_max"]);
-    parameters_.pid_i_min = std::stod(info_.hardware_parameters["pid_i_min"]);
-    parameters_.pid_antiwindup = info_.hardware_parameters["pid_antiwindup"] == "true";
+        : parameters_.remote_host = system_info.hardware_parameters.at("remote_host").c_str();
+
+    // 处理 open_loop 参数，先拷贝再转换为小写
+    std::string open_loop = system_info.hardware_parameters.at("open_loop");
+    std::transform(open_loop.begin(), open_loop.end(), open_loop.begin(), ::tolower);
+    parameters_.open_loop = (open_loop == "true");
+
+    // 处理 pid_antiwindup 参数，先拷贝再转换为小写
+    std::string pid_antiwindup = system_info.hardware_parameters.at("pid_antiwindup");
+    std::transform(pid_antiwindup.begin(), pid_antiwindup.end(), pid_antiwindup.begin(), ::tolower);
+    parameters_.pid_antiwindup = (pid_antiwindup == "true");
+
+    // 解析其他数值参数
+    parameters_.pid_p = std::stod(system_info.hardware_parameters.at("pid_p"));
+    parameters_.pid_i = std::stod(system_info.hardware_parameters.at("pid_i"));
+    parameters_.pid_d = std::stod(system_info.hardware_parameters.at("pid_d"));
+    parameters_.pid_i_max = std::stod(system_info.hardware_parameters.at("pid_i_max"));
+    parameters_.pid_i_min = std::stod(system_info.hardware_parameters.at("pid_i_min"));
     parameters_.command_guard_variant = system_info.hardware_parameters.at("command_guard_variant");
     parameters_.external_torque_cutoff_frequency =
-        std::stod(info_.hardware_parameters["external_torque_cutoff_frequency"]);
+        std::stod(system_info.hardware_parameters.at("external_torque_cutoff_frequency"));
     parameters_.measured_torque_cutoff_frequency =
-        std::stod(info_.hardware_parameters["measured_torque_cutoff_frequency"]);
+        std::stod(system_info.hardware_parameters.at("measured_torque_cutoff_frequency"));
+
+  size_t boolean_index = 0;  // 初始化索引
+  size_t digital_index = 0;
+  size_t analog_index = 0;
+
+  // 解析 Boolean I/O
+  for (const auto &param : system_info.hardware_parameters) {
+    if (param.first.find("boolean_io_") != std::string::npos && boolean_index < boolean_io_.size()) {
+      RCLCPP_INFO_STREAM(rclcpp::get_logger(LOGGER_NAME),
+                       "Parsing boolean_io parameter: " << param.first);
+      boolean_io_[boolean_index++] = (param.second == "true"); // 使用索引赋值
+    }
+  }
+
+// 解析 Digital I/O
+  for (const auto &param : system_info.hardware_parameters) {
+    if (param.first.find("digital_io_") != std::string::npos && digital_index < digital_io_.size()) {
+      RCLCPP_INFO_STREAM(rclcpp::get_logger(LOGGER_NAME),
+                       "Parsing digital_io parameter: " << param.first);
+      digital_io_[digital_index++] = std::stoull(param.second); // 使用索引赋值
+    }
+  }
+
+// 解析 Analog I/O
+  for (const auto &param : system_info.hardware_parameters) {
+    if (param.first.find("analog_io_") != std::string::npos && analog_index < analog_io_.size()) {
+      RCLCPP_INFO_STREAM(rclcpp::get_logger(LOGGER_NAME),
+                       "Parsing analog_io parameter: " << param.first);
+      analog_io_[analog_index++] = std::stod(param.second); // 使用索引赋值
+    }
+  }
+
+
   } catch (const std::out_of_range &e) {
     RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
                         lbr_fri_ros2::ColorScheme::ERROR
                             << "Failed to parse hardware parameters with: " << e.what()
                             << lbr_fri_ros2::ColorScheme::ENDC);
     return false;
+  } catch (const std::exception &e) {
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
+                        lbr_fri_ros2::ColorScheme::ERROR
+                            << "Unexpected error while parsing hardware parameters: " << e.what()
+                            << lbr_fri_ros2::ColorScheme::ENDC);
+    return false;
   }
   return true;
 }
+
+
 
 void SystemInterface::nan_command_interfaces_() {
   hw_lbr_command_.joint_position.fill(std::numeric_limits<double>::quiet_NaN());
@@ -608,33 +727,84 @@ bool SystemInterface::verify_estimated_ft_sensor_() {
 }
 
 bool SystemInterface::verify_gpios_() {
-  if (info_.gpios.size() != GPIO_SIZE) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
-                        lbr_fri_ros2::ColorScheme::ERROR
-                            << "Expected '" << static_cast<int>(GPIO_SIZE) << "' GPIOs, got '"
-                            << info_.gpios.size() << "'" << lbr_fri_ros2::ColorScheme::ENDC);
-    return false;
-  }
-  if (info_.gpios[0].name != HW_IF_WRENCH_PREFIX) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
-                        lbr_fri_ros2::ColorScheme::ERROR << "GPIO '" << info_.gpios[0].name.c_str()
-                                                         << "' received invalid name. Expected '"
-                                                         << HW_IF_WRENCH_PREFIX << "'"
-                                                         << lbr_fri_ros2::ColorScheme::ENDC);
-    return false;
-  }
-  if (info_.gpios[0].command_interfaces.size() != hw_lbr_command_.wrench.size()) {
-    RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
-                        lbr_fri_ros2::ColorScheme::ERROR
-                            << "GPIO '" << info_.gpios[0].name.c_str()
-                            << "' received invalid number of command interfaces. Received '"
-                            << info_.gpios[0].command_interfaces.size() << "', expected '"
-                            << hw_lbr_command_.wrench.size() << "'"
-                            << lbr_fri_ros2::ColorScheme::ENDC);
-    return false;
-  }
-  return true;
+    // 验证 GPIO 数量是否正确
+    if (info_.gpios.size() != GPIO_SIZE) {
+        RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
+                            "Expected '" << static_cast<int>(GPIO_SIZE) << "' GPIOs, got '"
+                                         << info_.gpios.size() << "'");
+        return false;
+    }
+
+    // 定义预期的 GPIO 名称和对应的接口数量
+    const std::map<std::string, size_t> expected_gpios = {
+        {HW_IF_WRENCH_PREFIX, hw_lbr_command_.wrench.size()},  // Wrench
+        {"boolean_io", 2},                                    // Boolean I/O
+        {"digital_io", 2},                                    // Digital I/O
+        {"analog_io", 2}                                      // Analog I/O
+    };
+
+    // 遍历并验证每个 GPIO
+    for (const auto& gpio : info_.gpios) {
+        // 检查 GPIO 名称是否在预期列表中
+        if (expected_gpios.find(gpio.name) == expected_gpios.end()) {
+            RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
+                                "GPIO '" << gpio.name
+                                         << "' received invalid name. Expected one of: "
+                                         << "[wrench, boolean_io, digital_io, analog_io]");
+            return false;
+        }
+
+        // 检查 command_interfaces 数量是否正确
+        if (gpio.command_interfaces.size() != expected_gpios.at(gpio.name)) {
+            RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
+                                "GPIO '" << gpio.name
+                                         << "' received invalid number of command interfaces. Received '"
+                                         << gpio.command_interfaces.size() << "', expected '"
+                                         << expected_gpios.at(gpio.name) << "'");
+            return false;
+        }
+
+        // 检查 state_interfaces 数量是否正确（如果需要验证）
+        if (gpio.state_interfaces.size() != expected_gpios.at(gpio.name)) {
+            RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
+                                "GPIO '" << gpio.name
+                                         << "' received invalid number of state interfaces. Received '"
+                                         << gpio.state_interfaces.size() << "', expected '"
+                                         << expected_gpios.at(gpio.name) << "'");
+            return false;
+        }
+    }
+
+    // 验证 Boolean I/O 的配置
+    if (boolean_io_.size() != expected_gpios.at("boolean_io")) {
+        RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
+                            "Expected " << expected_gpios.at("boolean_io")
+                                        << " Boolean I/Os, got '" << boolean_io_.size() << "'");
+        return false;
+    }
+
+    // 验证 Digital I/O 的配置
+    if (digital_io_.size() != expected_gpios.at("digital_io")) {
+        RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
+                            "Expected " << expected_gpios.at("digital_io")
+                                        << " Digital I/Os, got '" << digital_io_.size() << "'");
+        return false;
+    }
+
+    // 验证 Analog I/O 的配置
+    if (analog_io_.size() != expected_gpios.at("analog_io")) {
+        RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
+                            "Expected " << expected_gpios.at("analog_io")
+                                        << " Analog I/Os, got '" << analog_io_.size() << "'");
+        return false;
+    }
+
+    // 如果所有验证通过，输出成功日志
+    RCLCPP_INFO_STREAM(rclcpp::get_logger(LOGGER_NAME), "GPIO and I/O configuration is valid.");
+    return true;
 }
+
+
 
 bool SystemInterface::exit_commanding_active_(
     const KUKA::FRI::ESessionState &previous_session_state,

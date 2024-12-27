@@ -55,8 +55,8 @@ struct SystemInterfaceParameters {
 };
 
 struct EstimatedFTSensorParameters {
-  std::string chain_root{"base_link"};
-  std::string chain_tip{"link_tool"};
+  std::string chain_root{"link_0"};
+  std::string chain_tip{"link_ee"};
   double damping{0.2};
   double force_x_th{2.0};
   double force_y_th{2.0};
@@ -80,7 +80,7 @@ protected:
   static constexpr uint8_t LBR_FRI_SENSORS = 2;
   static constexpr uint8_t AUXILIARY_SENSOR_SIZE = 12;
   static constexpr uint8_t ESTIMATED_FT_SENSOR_SIZE = 6;
-  static constexpr uint8_t GPIO_SIZE = 1;
+  static constexpr uint8_t GPIO_SIZE = 3;
 
 public:
   SystemInterface() = default;
@@ -165,6 +165,39 @@ protected:
 
   // exposed command interfaces
   lbr_fri_idl::msg::LBRCommand hw_lbr_command_;
+
+  // I/O: Add boolean, digital, and analog I/O support
+  std::array<bool,2> boolean_io_;  // 存储布尔I/O值
+  std::vector<double> boolean_io_double_buffer_;  // 转换为 double 的缓冲区
+  
+  std::array<unsigned long long,2> digital_io_;  // 存储数字I/O值
+  std::array<double,2> analog_io_;  // 存储模拟I/O值
+
+  // I/O 数据的 getter 和 setter
+public:
+  void setBooleanIO(const std::array<bool,2>& boolean_io) {
+    boolean_io_ = boolean_io;
+  }
+
+  const std::array<bool,2>& getBooleanIO() const {
+    return boolean_io_;
+  }
+
+  void setDigitalIO(const std::array<unsigned long long,2>& digital_io) {
+    digital_io_ = digital_io;
+  }
+
+  const std::array<unsigned long long,2>& getDigitalIO() const {
+    return digital_io_;
+  }
+
+  void setAnalogIO(const std::array<double,2>& analog_io) {
+    analog_io_ = analog_io;
+  }
+
+  const std::array<double,2>& getAnalogIO() const {
+    return analog_io_;
+  }
 };
-} // namespace lbr_ros2_control
-#endif // LBR_ROS2_CONTROL__SYSTEM_INTERFACE_HPP_
+}  // namespace lbr_ros2_control
+#endif  // LBR_ROS2_CONTROL__SYSTEM_INTERFACE_HPP_

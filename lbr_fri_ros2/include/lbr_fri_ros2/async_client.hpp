@@ -4,7 +4,7 @@
 #include <cstring>
 #include <memory>
 #include <string>
-
+#include <vector> // 新增支持向量
 #include "rclcpp/logger.hpp"
 #include "rclcpp/logging.hpp"
 
@@ -44,11 +44,26 @@ public:
   void waitForCommand() override;
   void command() override;
 
+  // 新增 I/O 方法
+  bool read_boolean_io(size_t index);                     // 读取单个 Boolean I/O
+  unsigned long long read_digital_io(size_t index);       // 读取单个 Digital I/O
+  double read_analog_io(size_t index);                    // 读取单个 Analog I/O
+
+  void write_boolean_io(size_t index, bool value);        // 写入单个 Boolean I/O
+  void write_digital_io(size_t index, unsigned long long value); // 写入单个 Digital I/O
+  void write_analog_io(size_t index, double value);       // 写入单个 Analog I/O
+
 protected:
   std::shared_ptr<BaseCommandInterface> command_interface_ptr_;
   std::shared_ptr<StateInterface> state_interface_ptr_;
 
   bool open_loop_;
+
+  // 新增 I/O 状态存储（模拟硬件层的 I/O 状态）
+  std::vector<bool> boolean_io_states_;                   // 存储 Boolean I/O 的状态
+  std::vector<unsigned long long> digital_io_states_;     // 存储 Digital I/O 的状态
+  std::vector<double> analog_io_states_;                  // 存储 Analog I/O 的状态
 };
 } // namespace lbr_fri_ros2
+
 #endif // LBR_FRI_ROS2__ASYNC_CLIENT_HPP_

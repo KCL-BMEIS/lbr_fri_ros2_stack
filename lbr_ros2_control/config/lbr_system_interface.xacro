@@ -2,12 +2,12 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
     <xacro:macro name="lbr_system_interface"
         params="mode joint_limits system_parameters_path">
-        <!-- load system parameters via yaml -->
+        <!-- Load system parameters via yaml -->
         <xacro:property name="system_parameters"
             value="${xacro.load_yaml(system_parameters_path)}" />
 
         <ros2_control name="lbr_system_interface" type="system">
-            <!-- load plugin depending on mode -->
+            <!-- Load plugin depending on mode -->
             <xacro:if value="${mode == 'mock'}">
                 <hardware>
                     <plugin>mock_components/GenericSystem</plugin>
@@ -37,14 +37,21 @@
                     <param name="external_torque_cutoff_frequency">${system_parameters['hardware']['external_torque_cutoff_frequency']}</param>
                     <param name="measured_torque_cutoff_frequency">${system_parameters['hardware']['measured_torque_cutoff_frequency']}</param>
                     <param name="open_loop">${system_parameters['hardware']['open_loop']}</param>
+
+                    <!-- I/O Configuration -->
+                    <param name="boolean_io_0">${system_parameters['io']['boolean_io'][0]['default']}</param>
+                    <param name="boolean_io_1">${system_parameters['io']['boolean_io'][1]['default']}</param>
+                    <param name="digital_io_0">${system_parameters['io']['digital_io'][0]['default']}</param>
+                    <param name="digital_io_1">${system_parameters['io']['digital_io'][1]['default']}</param>
+                    <param name="analog_io_0">${system_parameters['io']['analog_io'][0]['default']}</param>
+                    <param name="analog_io_1">${system_parameters['io']['analog_io'][1]['default']}</param>
                 </hardware>
             </xacro:if>
 
-            <!-- define lbr specific state interfaces as sensor, see
-            https://github.com/ros-controls/roadmap/blob/master/design_drafts/components_architecture_and_urdf_examples.md -->
+            <!-- Define LBR-specific state interfaces as sensors -->
             <xacro:if value="${mode == 'hardware'}">
                 <sensor name="auxiliary_sensor">
-                    <!-- see KUKA::FRI::LBRState -->
+                    <!-- See KUKA::FRI::LBRState -->
                     <state_interface name="sample_time" />
                     <state_interface name="session_state" />
                     <state_interface name="connection_quality" />
@@ -59,8 +66,8 @@
                     <state_interface name="tracking_performance" />
                 </sensor>
 
-                <sensor
-                    name="estimated_ft_sensor">
+                <!-- Force-Torque Sensor -->
+                <sensor name="estimated_ft_sensor">
                     <param name="chain_root">${system_parameters['estimated_ft_sensor']['chain_root']}</param>
                     <param name="chain_tip">${system_parameters['estimated_ft_sensor']['chain_tip']}</param>
                     <param name="damping">${system_parameters['estimated_ft_sensor']['damping']}</param>
@@ -78,19 +85,32 @@
                     <state_interface name="torque.z" />
                 </sensor>
 
-                <!-- FRI Cartesian impedance control mode -->
-                <gpio
-                    name="wrench">
-                    <command_interface name="force.x" />
-                    <command_interface name="force.y" />
-                    <command_interface name="force.z" />
-                    <command_interface name="torque.x" />
-                    <command_interface name="torque.y" />
-                    <command_interface name="torque.z" />
+                <!-- Boolean I/O -->
+                <gpio name="boolean_io">
+                    <command_interface name="boolean_io_0" />
+                    <state_interface name="boolean_io_0" />
+                    <command_interface name="boolean_io_1" />
+                    <state_interface name="boolean_io_1" />
+                </gpio>
+
+                <!-- Digital I/O -->
+                <gpio name="digital_io">
+                    <command_interface name="digital_io_0" />
+                    <state_interface name="digital_io_0" />
+                    <command_interface name="digital_io_1" />
+                    <state_interface name="digital_io_1" />
+                </gpio>
+
+                <!-- Analog I/O -->
+                <gpio name="analog_io">
+                    <command_interface name="analog_io_0" />
+                    <state_interface name="analog_io_0" />
+                    <command_interface name="analog_io_1" />
+                    <state_interface name="analog_io_1" />
                 </gpio>
             </xacro:if>
 
-            <!-- define joints and command/state interfaces for each joint -->
+            <!-- Define joints and command/state interfaces for each joint -->
             <xacro:macro name="joint_interface"
                 params="name min_position max_position max_velocity max_torque mode">
                 <joint name="${name}">
@@ -98,12 +118,10 @@
                         <param name="min">${min_position}</param>
                         <param name="max">${max_position}</param>
                     </command_interface>
-                    <!-- only single command interface, refer
-                    https://github.com/ros-controls/gz_ros2_control/issues/182 -->
                     <xacro:unless value="${mode == 'gazebo'}">
                         <command_interface name="effort">
                             <param name="min">-${max_torque}</param>
-                            <param name="max"> ${max_torque}</param>
+                            <param name="max">${max_torque}</param>
                         </command_interface>
                     </xacro:unless>
                     <state_interface name="position" />

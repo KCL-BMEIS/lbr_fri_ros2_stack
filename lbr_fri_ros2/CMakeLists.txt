@@ -13,7 +13,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(control_toolbox REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
-find_package(Eigen3)
+find_package(Eigen3 REQUIRED)
 find_package(FRIClient REQUIRED)
 find_package(kdl_parser REQUIRED)
 find_package(lbr_fri_idl REQUIRED)
@@ -22,7 +22,7 @@ find_package(rclcpp REQUIRED)
 find_package(realtime_tools REQUIRED)
 find_package(urdf REQUIRED)
 
-# lbr_fri_ros2
+# lbr_fri_ros2 library
 add_library(lbr_fri_ros2
   SHARED
     src/interfaces/base_command.cpp
@@ -81,16 +81,23 @@ install(
   LIBRARY DESTINATION lib
 )
 
+# Add test_position_command executable
+add_executable(test_position_command test/test_position_command.cpp)
+target_link_libraries(test_position_command lbr_fri_ros2)
+
+# Install the test_position_command executable
+install(TARGETS
+  test_position_command
+  DESTINATION lib/${PROJECT_NAME}
+)
+
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
   ament_add_gtest(test_command_interfaces test/test_command_interfaces.cpp)
   target_link_libraries(test_command_interfaces lbr_fri_ros2)
 
-  # # some examples of how to use the interfaces
-  # add_executable(test_position_command test/test_position_command.cpp)
-  # target_link_libraries(test_position_command lbr_fri_ros2)
-
+  # Uncomment and configure other test executables if needed
   # add_executable(test_torque_command test/test_torque_command.cpp)
   # target_link_libraries(test_torque_command lbr_fri_ros2)
 

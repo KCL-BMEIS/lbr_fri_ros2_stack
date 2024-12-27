@@ -20,6 +20,9 @@ find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(lbr_fri_idl
+  msg/LBRAnalogCommand.msg
+  msg/LBRBooleanCommand.msg
+  msg/LBRDigitalCommand.msg
   msg/LBRCommand.msg
   msg/LBRJointPositionCommand.msg
   msg/LBRState.msg

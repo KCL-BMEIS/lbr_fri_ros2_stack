@@ -9,3 +9,10 @@
 float64[7] joint_position
 float64[7] torque
 float64[6] wrench
+
+string analog_name
+float64[2] analog_io
+string boolean_name
+bool[2] boolean_io
+string digital_name
+uint64[2] digital_io
