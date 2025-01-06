@@ -33,6 +33,8 @@ add_library(
   src/controllers/lbr_torque_command_controller.cpp
   src/controllers/lbr_wrench_command_controller.cpp
   src/controllers/lbr_state_broadcaster.cpp
+  src/controllers/lbr_analog_command_controller.cpp 
+  src/controllers/lbr_digital_command_controller.cpp
   src/system_interface.cpp
 )
 

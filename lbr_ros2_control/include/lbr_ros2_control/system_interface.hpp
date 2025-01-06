@@ -8,6 +8,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <map> //for IO mappings
 
 #include "controller_interface/controller_interface.hpp"
 #include "hardware_interface/system_interface.hpp"
@@ -17,15 +18,18 @@
 
 #include "friClientVersion.h"
 #include "friLBRState.h"
+#include "friLBRCommand.h"
 
 #include "lbr_fri_idl/msg/lbr_command.hpp"
 #include "lbr_fri_idl/msg/lbr_state.hpp"
+
 #include "lbr_fri_ros2/app.hpp"
 #include "lbr_fri_ros2/async_client.hpp"
 #include "lbr_fri_ros2/command_guard.hpp"
 #include "lbr_fri_ros2/filters.hpp"
 #include "lbr_fri_ros2/formatting.hpp"
 #include "lbr_fri_ros2/ft_estimator.hpp"
+
 #include "lbr_fri_ros2/interfaces/state.hpp"
 #include "lbr_ros2_control/system_interface_type_values.hpp"
 
@@ -55,8 +59,8 @@ struct SystemInterfaceParameters {
 };
 
 struct EstimatedFTSensorParameters {
-  std::string chain_root{"link_0"};
-  std::string chain_tip{"link_ee"};
+  std::string chain_root{"base_link"};
+  std::string chain_tip{"link_tool"};
   double damping{0.2};
   double force_x_th{2.0};
   double force_y_th{2.0};
@@ -166,38 +170,16 @@ protected:
   // exposed command interfaces
   lbr_fri_idl::msg::LBRCommand hw_lbr_command_;
 
-  // I/O: Add boolean, digital, and analog I/O support
-  std::array<bool,2> boolean_io_;  // 存储布尔I/O值
-  std::vector<double> boolean_io_double_buffer_;  // 转换为 double 的缓冲区
-  
-  std::array<unsigned long long,2> digital_io_;  // 存储数字I/O值
-  std::array<double,2> analog_io_;  // 存储模拟I/O值
+  //IO command and state mappings
+  std::map<std::string, double> analog_value;
+  std::map<std::string, unsigned long long> digital_value;
+  // 模拟 IO 和数字 IO 的命令值
+  std::map<std::string, double> commanded_analog_value;
+  std::map<std::string, unsigned long long> commanded_digital_value;
+  // 模拟 IO 和数字 IO 的状态值
+  std::map<std::string, double> measured_analog_value;
+  std::map<std::string, unsigned long long> measured_digital_value;
 
-  // I/O 数据的 getter 和 setter
-public:
-  void setBooleanIO(const std::array<bool,2>& boolean_io) {
-    boolean_io_ = boolean_io;
-  }
-
-  const std::array<bool,2>& getBooleanIO() const {
-    return boolean_io_;
-  }
-
-  void setDigitalIO(const std::array<unsigned long long,2>& digital_io) {
-    digital_io_ = digital_io;
-  }
-
-  const std::array<unsigned long long,2>& getDigitalIO() const {
-    return digital_io_;
-  }
-
-  void setAnalogIO(const std::array<double,2>& analog_io) {
-    analog_io_ = analog_io;
-  }
-
-  const std::array<double,2>& getAnalogIO() const {
-    return analog_io_;
-  }
 };
-}  // namespace lbr_ros2_control
-#endif  // LBR_ROS2_CONTROL__SYSTEM_INTERFACE_HPP_
+} // namespace lbr_ros2_control
+#endif // LBR_ROS2_CONTROL__SYSTEM_INTERFACE_HPP_

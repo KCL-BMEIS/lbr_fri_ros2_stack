@@ -1,8 +1,9 @@
 #ifndef LBR_FRI_ROS2__INTERFACES__STATE_HPP_
 #define LBR_FRI_ROS2__INTERFACES__STATE_HPP_
+
 #include <atomic>
 #include <string>
-#include <array>
+#include <vector>
 
 #include "rclcpp/logger.hpp"
 #include "rclcpp/logging.hpp"
@@ -56,13 +57,10 @@ protected:
   StateInterfaceParameters parameters_;
   JointExponentialFilterArray external_torque_filter_, measured_torque_filter_;
 
-  // I/O 状态字段
-  std::array<double, 2> measured_analog_io_;
-  std::array<double, 2> commanded_analog_io_;
-  std::array<bool, 2> measured_boolean_io_;
-  std::array<bool, 2> commanded_boolean_io_;
-  std::array<uint64_t, 2> measured_digital_io_;
-  std::array<uint64_t, 2> commanded_digital_io_;
+  // IO-specific parameters
+  static constexpr size_t NUM_DIGITAL_IO = 8;
+  static constexpr size_t NUM_ANALOG_IO = 2;
 };
 } // namespace lbr_fri_ros2
+
 #endif // LBR_FRI_ROS2__INTERFACES__STATE_HPP_

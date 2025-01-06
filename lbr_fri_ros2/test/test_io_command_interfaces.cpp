@@ -69,28 +69,28 @@ int main() {
       state = client->get_state_interface()->get_state();
       state_initialized = true;
     }
-    // RCLCPP_INFO(node->get_logger(), "Measured joint position: %f %f %f %f %f %f %f",
-    //             state.measured_joint_position[0], state.measured_joint_position[1],
-    //             state.measured_joint_position[2], state.measured_joint_position[3],
-    //             state.measured_joint_position[4], state.measured_joint_position[5],
-    //             state.measured_joint_position[6]);
+    RCLCPP_INFO(node->get_logger(), "Measured digital inputs: %li %li %li %li %li %li %li %li ",
+                state.measured_digital_value[0], state.measured_digital_value[1],
+                state.measured_digital_value[2], state.measured_digital_value[3],
+                state.measured_digital_value[4], state.measured_digital_value[5],
+                state.measured_digital_value[6], state.measured_digital_value[7]);
 
-    // // set command
-    // command.joint_position = state.measured_joint_position;
-    // command.joint_position[6] += 0.001;
-    // client->get_command_interface()->buffer_command_target(command);
+    // set command
+    command.digital_value.fill(0);
+    command.digital_value[0] = 1;
+    command.digital_value[2] = 1;
+    client->get_command_interface()->buffer_command_target(command);
 
-    // // 3. test the interfaced for safe interaction
+    // 3. test the interfaced for safe interaction
+    auto command_target = client->get_command_interface()->get_command_target();
+    command_target.digital_value[7] = 1; // must not change internal value!
+    command_target = client->get_command_interface()->get_command_target();
 
-    // auto command_target = client->get_command_interface()->get_command_target();
-    // command_target.joint_position[6] += 0.001; // must not change internal value!
-    // command_target = client->get_command_interface()->get_command_target();
-
-    // RCLCPP_INFO(node->get_logger(), "Command joint position: %f %f %f %f %f %f %f",
-    //             command_target.joint_position[0], command_target.joint_position[1],
-    //             command_target.joint_position[2], command_target.joint_position[3],
-    //             command_target.joint_position[4], command_target.joint_position[5],
-    //             command_target.joint_position[6]);
+    RCLCPP_INFO(node->get_logger(), "Command digital io values: %li %li %li %li %li %li %li %li",
+                command_target.digital_value[0], command.digital_value[1],
+                command_target.digital_value[2], command.digital_value[3],
+                command_target.digital_value[4], command.digital_value[5],
+                command_target.digital_value[6], command.digital_value[7]);
 
     // spin
     rclcpp::spin_some(node);

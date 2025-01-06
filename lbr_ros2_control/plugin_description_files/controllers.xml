@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
 <library path="lbr_ros2_control">
     <!-- LBR state broadcaster plugin -->
-    <class name="lbr_ros2_control/LBRStateBroadcaster" type="lbr_ros2_control::LBRStateBroadcaster"
+
+    <class name="lbr_ros2_control/LBRStateBroadcaster" 
+        type="lbr_ros2_control::LBRStateBroadcaster"
         base_class_type="controller_interface::ControllerInterface">
         <description>Broadcaster for LBRState messages, see lbr_fri_idl/msg/LBRState.msg.</description>
     </class>
@@ -37,3 +39,19 @@
         <description>A simple admittance controller.</description>
     </class>
 </library>
+
+    <!-- LBR forward analog command controller plugin -->
+    <class name="lbr_ros2_control/LBRAnalogCommandController"
+        type="lbr_ros2_control::LBRAnalogCommandController"
+        base_class_type="controller_interface::ControllerInterface">
+        <description>Forward command controller for LBRAnalogCommand message, see
+            lbr_fri_idl/msg/LBRAnalogCommand.msg.</description>
+    </class>
+
+    <!-- LBR forward digital command controller plugin -->
+    <class name="lbr_ros2_control/LBRDigitalCommandController"
+        type="lbr_ros2_control::LBRDigitalCommandController"
+        base_class_type="controller_interface::ControllerInterface">
+        <description>Forward command controller for LBRDigitalCommand message, see
+            lbr_fri_idl/msg/LBRDigitalCommand.msg.</description>
+    </class>

@@ -1,61 +1,62 @@
-# These parameters are read by the lbr_system_interface.xacro and configure the lbr_ros2_control::SystemInterface
+# these parameters are read by the lbr_system_interface.xacro and configure the lbr_ros2_control::SystemInterface
 hardware:
-  fri_client_sdk: # The FRI client SDK version is used to create the correct state interfaces in lbr_system_interface.xacro
+  fri_client_sdk: # the fri_client_sdk version is used to create the correct state interfaces lbr_system_interface.xacro
     major_version: 1
     minor_version: 15
-  client_command_mode: position # The command mode specifies the user-sent commands. Available: [position, torque, wrench]
-  port_id: 30200 # Port ID for the UDP communication. Useful in multi-robot setups
-  remote_host: INADDR_ANY # The expected robot IP address. INADDR_ANY will accept any incoming connection
-  rt_prio: 80 # Real-time priority for the control loop
-  pid_p: 0.1 # P gain for the joint position (useful for asynchronous control)
+  client_command_mode: position # the command mode specifies the user-sent commands. Available: [position, torque, wrench]
+  port_id: 30200 # port id for the UDP communication. Useful in multi-robot setups
+  remote_host: INADDR_ANY # the expected robot IP address. INADDR_ANY will accept any incoming connection
+  rt_prio: 80 # real-time priority for the control loop
+  pid_p: 0.1 # P gain for the joint position  (useful for asynchronous control)
   pid_i: 0.0 # I gain for the joint position command
   pid_d: 0.0 # D gain for the joint position command
-  pid_i_max: 0.0 # Max integral value for the joint position command
-  pid_i_min: 0.0 # Min integral value for the joint position command
-  pid_antiwindup: false # Enable antiwindup for the joint position command
-  command_guard_variant: default # If requested position/velocities exceed limits, CommandGuard will trigger and shut the connection. Available: [default, safe_stop]
-  external_torque_cutoff_frequency: 10 # Low-pass filter for the external joint torque measurements [Hz]
-  measured_torque_cutoff_frequency: 10 # Low-pass filter for the joint torque measurements [Hz]
-  open_loop: true # KUKA works best in open-loop control mode
+  pid_i_max: 0.0 # max integral value for the joint position command
+  pid_i_min: 0.0 # min integral value for the joint position command
+  pid_antiwindup: false # enable antiwindup for the joint position command
+  command_guard_variant: default # if requested position / velocities beyond limits, CommandGuard will be triggered and shut the connection. Available: [default, safe_stop]
+  external_torque_cutoff_frequency: 10 # low-pass filter for the external joint torque measurements [Hz]
+  measured_torque_cutoff_frequency: 10 # low-pass filter for the joint torque measurements [Hz]
+  open_loop: true # KUKA works the best in open_loop control mode
 
-estimated_ft_sensor: # Estimates the external force-torque from the external joint torque values
+estimated_ft_sensor: # estimates the external force-torque from the external joint torque values
   chain_root: base_link
   chain_tip: link_tool
-  damping: 0.2 # Damping factor for the pseudo-inverse of the Jacobian
-  force_x_th: 2.0 # X-force threshold. Only if the force exceeds this value, the force will be considered
-  force_y_th: 2.0 # Y-force threshold. Only if the force exceeds this value, the force will be considered
-  force_z_th: 2.0 # Z-force threshold. Only if the force exceeds this value, the force will be considered
-  torque_x_th: 0.5 # X-torque threshold. Only if the torque exceeds this value, the torque will be considered
-  torque_y_th: 0.5 # Y-torque threshold. Only if the torque exceeds this value, the torque will be considered
-  torque_z_th: 0.5 # Z-torque threshold. Only if the torque exceeds this value, the torque will be considered
+  damping: 0.2 # damping factor for the pseudo-inverse of the Jacobian
+  force_x_th: 2.0 # x-force threshold. Only if the force exceeds this value, the force will be considered
+  force_y_th: 2.0 # y-force threshold. Only if the force exceeds this value, the force will be considered
+  force_z_th: 2.0 # z-force threshold. Only if the force exceeds this value, the force will be considered
+  torque_x_th: 0.5 # x-torque threshold. Only if the torque exceeds this value, the torque will be considered
+  torque_y_th: 0.5 # y-torque threshold. Only if the torque exceeds this value, the torque will be considered
+  torque_z_th: 0.5 # z-torque threshold. Only if the torque exceeds this value, the torque will be considered
 
-io: # Define the I/O configuration for boolean, digital, and analog signals
-  boolean_io: # Boolean I/O configuration, true/false
-    - name: boolean_io_0
-      state: "boolean_io/boolean_io_0"
-      command: "boolean_io/boolean_io_0"
-      default: true
-    - name: boolean_io_1
-      state: "boolean_io/boolean_io_1"
-      command: "boolean_io/boolean_io_1"
-      default: false
-
-  digital_io: # Digital I/O configuration, unsigned integers
-    - name: digital_io_0
-      state: "digital_io/digital_io_0"
-      command: "digital_io/digital_io_0"
-      default: 0
-    - name: digital_io_1
-      state: "digital_io/digital_io_1"
-      command: "digital_io/digital_io_1"
-      default: 24
-
-  analog_io: # Analog I/O configuration, floating-point numbers
-    - name: analog_io_0
-      state: "analog_io/analog_io_0"
-      command: "analog_io/analog_io_0"
-      default: 0.5
+# New Analog IO configuration
+analog_io: # configuration for analog IO
+  channels:
     - name: analog_io_1
-      state: "analog_io/analog_io_1"
-      command: "analog_io/analog_io_1"
-      default: 1.2
+      default_value: 0.0 # default value for analog_io_1
+      range_min: -10.0 # minimum range for analog_io_1
+      range_max: 10.0 # maximum range for analog_io_1
+    - name: analog_io_2
+      default_value: 0.0
+      range_min: -10.0
+      range_max: 10.0
+
+# New Digital IO configuration
+digital_io: # configuration for digital IO
+  channels:
+    - name: digital_io_1
+      default_value: 0 # default value for digital_io_1 (0 or 1)
+    - name: digital_io_2
+      default_value: 0
+    - name: digital_io_3
+      default_value: 0
+    - name: digital_io_4
+      default_value: 0
+    - name: digital_io_5
+      default_value: 0
+    - name: digital_io_6
+      default_value: 0
+    - name: digital_io_7
+      default_value: 0
+    - name: digital_io_8
+      default_value: 0

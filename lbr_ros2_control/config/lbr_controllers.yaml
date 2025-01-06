@@ -1,5 +1,5 @@
 # Use of /** so that the configurations hold for controller
-# managers regardless of their namespace. Useful in multi-robot setups.
+# managers regardless of their namespace. Usefull in multi-robot setups.
 /**/controller_manager:
   ros__parameters:
     update_rate: 1000
@@ -36,17 +36,17 @@
     admittance_controller:
       type: lbr_ros2_control/AdmittanceController
 
-    # Boolean I/O Controller
-    boolean_io_controller:
-      type: io_controllers/BooleanIOController
+    # LBR IO Command Controller
+    gpio_command_controller:
+      type: gpio_controllers/GpioCommandController
 
-    # Digital I/O Controller
-    digital_io_controller:
-      type: io_controllers/DigitalIOController
-
-    # Analog I/O Controller
-    analog_io_controller:
-      type: io_controllers/AnalogIOController
+    # LBR analog controllers
+    lbr_analog_command_controller:
+      type: lbr_ros2_control/LBRAnalogCommandController
+    
+    # LBR digital Command Controller
+    lbr_digital_command_controller:
+      type: lbr_ros2_control/LBRDigitalCommandController
 
 /**/force_torque_broadcaster:
   ros__parameters:
@@ -83,38 +83,38 @@
       - A7
     interface_name: position
 
-/**/boolean_io_controller:
+/**/gpio_command_controller:
   ros__parameters:
-    io_names:
-      - boolean_io_0
-      - boolean_io_1
+    gpios:
+      - digital_io
+      - analog_io
     command_interfaces:
-      - command
+      digital_io:
+        - interfaces:
+          - digital_io_1
+          - digital_io_2
+          - digital_io_3
+          - digital_io_4
+          - digital_io_5
+          - digital_io_6
+          - digital_io_7
+          - digital_io_8
+      analog_io:
+        - interfaces:
+          - analog_io_1
+          - analog_io_2
     state_interfaces:
-      - state
-    state_publish_rate: 10.0
-    command_publish_rate: 10.0
-
-/**/digital_io_controller:
-  ros__parameters:
-    io_names:
-      - digital_io_0
-      - digital_io_1
-    command_interfaces:
-      - command
-    state_interfaces:
-      - state
-    state_publish_rate: 10.0
-    command_publish_rate: 10.0
-
-/**/analog_io_controller:
-  ros__parameters:
-    io_names:
-      - analog_io_0
-      - analog_io_1
-    command_interfaces:
-      - command
-    state_interfaces:
-      - state
-    state_publish_rate: 10.0
-    command_publish_rate: 10.0
+      digital_io:
+        - interfaces:
+          - digital_io_1
+          - digital_io_2
+          - digital_io_3
+          - digital_io_4
+          - digital_io_5
+          - digital_io_6
+          - digital_io_7
+          - digital_io_8
+      analog_io:
+        - interfaces:
+          - analog_io_1
+          - analog_io_2

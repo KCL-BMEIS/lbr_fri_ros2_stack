@@ -22,10 +22,6 @@
 #  * external_torque [Nm]
 #  * ipo_joint_position [rad]
 #  * tracking_performance [a.u.]
-#
-#  * BooleanIOValue[#]
-#  * DigitalIOValue[#]
-#  * AnalogIOValue[#]
 
 float64 sample_time
 int8 session_state
@@ -48,18 +44,11 @@ float64[7] external_torque
 float64[7] ipo_joint_position
 float64 tracking_performance
 
-# Analog I/O
-string analog_name  # 描述模拟 I/O
-float64[2] measured_analog_io  # 测量的模拟 I/O 状态
-float64[2] commanded_analog_io  # 命令的模拟 I/O 状态
-
-# Boolean I/O
-string boolean_name  # 描述布尔 I/O
-bool[2] measured_boolean_io  # 测量的布尔 I/O 状态
-bool[2] commanded_boolean_io  # 命令的布尔 I/O 状态
-
-# Digital I/O
-string digital_name  # 描述数字 I/O
-uint64[2] measured_digital_io  # 测量的数字 I/O 状态
-uint64[2] commanded_digital_io  # 命令的数字 I/O 状态
-
+string[2] analog_io
+float64[2] measured_analog_value
+float64[2] commanded_analog_value
+string[8] digital_io
+uint64[8] measured_digital_value
+uint64[8] commanded_digital_value
+#  * uint64[8] measured_boolean_value
+#  * uint64[8] commanded_boolean_value
