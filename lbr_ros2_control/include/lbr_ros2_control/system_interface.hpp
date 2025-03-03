@@ -8,7 +8,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-#include <map> //for IO mappings
 
 #include "controller_interface/controller_interface.hpp"
 #include "hardware_interface/system_interface.hpp"
@@ -18,19 +17,16 @@
 
 #include "friClientVersion.h"
 #include "friLBRState.h"
-#include "friLBRCommand.h"
 
 #include "lbr_fri_idl/msg/lbr_command.hpp"
 #include "lbr_fri_idl/msg/lbr_state.hpp"
-
 #include "lbr_fri_ros2/app.hpp"
 #include "lbr_fri_ros2/async_client.hpp"
 #include "lbr_fri_ros2/command_guard.hpp"
-#include "lbr_fri_ros2/filters.hpp"
 #include "lbr_fri_ros2/formatting.hpp"
 #include "lbr_fri_ros2/ft_estimator.hpp"
-
 #include "lbr_fri_ros2/interfaces/state.hpp"
+#include "lbr_fri_ros2/types.hpp"
 #include "lbr_ros2_control/system_interface_type_values.hpp"
 
 namespace lbr_ros2_control {
@@ -47,20 +43,18 @@ struct SystemInterfaceParameters {
   const char *remote_host{nullptr};
   int32_t rt_prio{80};
   bool open_loop{true};
-  double pid_p{0.0};
-  double pid_i{0.0};
-  double pid_d{0.0};
-  double pid_i_max{0.0};
-  double pid_i_min{0.0};
-  double pid_antiwindup{0.0};
+  double joint_position_tau{0.04};
   std::string command_guard_variant{"default"};
-  double external_torque_cutoff_frequency{10.0};
-  double measured_torque_cutoff_frequency{10.0};
+  double external_torque_tau{0.04};
+  double measured_torque_tau{0.04};
 };
 
 struct EstimatedFTSensorParameters {
-  std::string chain_root{"base_link"};
-  std::string chain_tip{"link_tool"};
+  bool enabled{true};
+  std::uint16_t update_rate{100};
+  int32_t rt_prio{30};
+  std::string chain_root{"lbr_link_0"};
+  std::string chain_tip{"lbr_link_ee"};
   double damping{0.2};
   double force_x_th{2.0};
   double force_y_th{2.0};
@@ -84,7 +78,7 @@ protected:
   static constexpr uint8_t LBR_FRI_SENSORS = 2;
   static constexpr uint8_t AUXILIARY_SENSOR_SIZE = 12;
   static constexpr uint8_t ESTIMATED_FT_SENSOR_SIZE = 6;
-  static constexpr uint8_t GPIO_SIZE = 3;
+  static constexpr uint8_t GPIO_SIZE = 2;
 
 public:
   SystemInterface() = default;
@@ -164,22 +158,15 @@ protected:
   void compute_hw_velocity_();
 
   // additional force-torque state interface
-  lbr_fri_ros2::FTEstimator::cart_array_t hw_ft_;
+  lbr_fri_ros2::cart_array_t hw_ft_;
+  std::shared_ptr<lbr_fri_ros2::FTEstimatorImpl> ft_estimator_impl_ptr_;
   std::unique_ptr<lbr_fri_ros2::FTEstimator> ft_estimator_ptr_;
 
   // exposed command interfaces
   lbr_fri_idl::msg::LBRCommand hw_lbr_command_;
 
-  //IO command and state mappings
-  std::map<std::string, double> analog_value;
-  std::map<std::string, unsigned long long> digital_value;
-  // 模拟 IO 和数字 IO 的命令值
-  std::map<std::string, double> commanded_analog_value;
-  std::map<std::string, unsigned long long> commanded_digital_value;
-  // 模拟 IO 和数字 IO 的状态值
-  std::map<std::string, double> measured_analog_value;
-  std::map<std::string, unsigned long long> measured_digital_value;
-
+   // 新增：用于存储 IO 命令（顺序对应 xacro 中的定义：analog_io_1, analog_io_2, boolean_io_1, boolean_io_2, digital_io_1, digital_io_2）
+   std::array<double, 6> io_command_;
 };
 } // namespace lbr_ros2_control
 #endif // LBR_ROS2_CONTROL__SYSTEM_INTERFACE_HPP_

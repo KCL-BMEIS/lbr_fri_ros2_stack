@@ -21,13 +21,10 @@ controller_interface::CallbackReturn LBRStateBroadcaster::on_init() {
     rt_state_publisher_ptr_ =
         std::make_shared<realtime_tools::RealtimePublisher<lbr_fri_idl::msg::LBRState>>(
             state_publisher_ptr_);
-    if (joint_names_.size() != KUKA::FRI::LBRState::NUMBER_OF_JOINTS) {
-      RCLCPP_ERROR(
-          this->get_node()->get_logger(),
-          "Number of joint names (%ld) does not match the number of joints in the robot (%d).",
-          joint_names_.size(), KUKA::FRI::LBRState::NUMBER_OF_JOINTS);
-      return controller_interface::CallbackReturn::ERROR;
+    if (!this->get_node()->has_parameter("robot_name")) {
+      this->get_node()->declare_parameter("robot_name", "lbr");
     }
+    configure_joint_names_();
   } catch (const std::exception &e) {
     RCLCPP_ERROR(this->get_node()->get_logger(),
                  "Failed to initialize LBR state broadcaster with: %s.", e.what());
@@ -153,6 +150,20 @@ void LBRStateBroadcaster::init_state_msg_() {
   rt_state_publisher_ptr_->msg_.time_stamp_nano_sec = std::numeric_limits<uint32_t>::quiet_NaN();
   rt_state_publisher_ptr_->msg_.time_stamp_sec = std::numeric_limits<uint32_t>::quiet_NaN();
   rt_state_publisher_ptr_->msg_.tracking_performance = std::numeric_limits<double>::quiet_NaN();
+}
+
+void LBRStateBroadcaster::configure_joint_names_() {
+  if (joint_names_.size() != lbr_fri_ros2::N_JNTS) {
+    RCLCPP_ERROR(
+        this->get_node()->get_logger(),
+        "Number of joint names (%ld) does not match the number of joints in the robot (%d).",
+        joint_names_.size(), lbr_fri_ros2::N_JNTS);
+    throw std::runtime_error("Failed to configure joint names.");
+  }
+  std::string robot_name = this->get_node()->get_parameter("robot_name").as_string();
+  for (int i = 0; i < lbr_fri_ros2::N_JNTS; ++i) {
+    joint_names_[i] = robot_name + "_A" + std::to_string(i + 1);
+  }
 }
 } // namespace lbr_ros2_control
 

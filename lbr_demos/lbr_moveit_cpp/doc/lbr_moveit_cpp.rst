@@ -41,8 +41,8 @@ Hardware
 ~~~~~~~~
 #. Client side configurations:
 
-    #. Configure the ``client_command_mode`` to ``position`` in `lbr_system_parameters.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_ros2_control/config/lbr_system_parameters.yaml>`_:octicon:`link-external`
-    #. Set the ``update_rate`` to ``100`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`
+    #. Configure the ``client_command_mode`` to ``position`` in `lbr_system_config.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_description/ros2_control/lbr_system_config.yaml>`_:octicon:`link-external`
+    #. Set the ``update_rate`` to ``100`` in `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_description/ros2_control/lbr_controllers.yaml>`_:octicon:`link-external`
 
 #. Remote side configurations:
 
@@ -76,7 +76,7 @@ The ``MoveGroup`` configurations are parsed conveniently through a mixin:
 
 .. code-block:: python
 
-    from lbr_bringup.move_group import LBRMoveGroupMixin
+    from lbr_bringup.moveit import LBRMoveGroupMixin
 
     ...
 

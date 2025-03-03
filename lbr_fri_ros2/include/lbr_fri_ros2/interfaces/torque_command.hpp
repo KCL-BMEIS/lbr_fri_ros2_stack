@@ -12,7 +12,7 @@ protected:
 
 public:
   TorqueCommandInterface() = delete;
-  TorqueCommandInterface(const PIDParameters &pid_parameters,
+  TorqueCommandInterface(const double &joint_position_tau,
                          const CommandGuardParameters &command_guard_parameters,
                          const std::string &command_guard_variant = "default");
 

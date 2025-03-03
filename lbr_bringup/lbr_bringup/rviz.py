@@ -16,32 +16,32 @@ class RVizMixin:
         )
 
     @staticmethod
-    def arg_rviz_config_pkg(
+    def arg_rviz_cfg_pkg(
         default_value: str = "lbr_bringup",
     ) -> DeclareLaunchArgument:
         return DeclareLaunchArgument(
-            name="rviz_config_pkg",
+            name="rviz_cfg_pkg",
             default_value=default_value,
-            description="The RViz configuration file.",
+            description="The package containing the RViz configuration file.",
         )
 
     @staticmethod
-    def arg_rviz_config(
+    def arg_rviz_cfg(
         default_value: str = "config/mock.rviz",
     ) -> DeclareLaunchArgument:
         return DeclareLaunchArgument(
-            name="rviz_config",
+            name="rviz_cfg",
             default_value=default_value,
-            description="The RViz configuration file.",
+            description="The RViz configuration file relative to rviz_cfg_pkg.",
         )
 
     @staticmethod
     def node_rviz(
-        rviz_config_pkg: Optional[
-            Union[LaunchConfiguration, str]
-        ] = LaunchConfiguration("rviz_config_pkg", default="lbr_bringup"),
-        rviz_config: Optional[Union[LaunchConfiguration, str]] = LaunchConfiguration(
-            "rviz_config", default="config/mock.rviz"
+        rviz_cfg_pkg: Optional[Union[LaunchConfiguration, str]] = LaunchConfiguration(
+            "rviz_cfg_pkg", default="lbr_bringup"
+        ),
+        rviz_cfg: Optional[Union[LaunchConfiguration, str]] = LaunchConfiguration(
+            "rviz_cfg", default="config/mock.rviz"
         ),
         **kwargs,
     ) -> Node:
@@ -53,8 +53,8 @@ class RVizMixin:
                 "-d",
                 PathJoinSubstitution(
                     [
-                        FindPackageShare(rviz_config_pkg),
-                        rviz_config,
+                        FindPackageShare(rviz_cfg_pkg),
+                        rviz_cfg,
                     ]
                 ),
             ],

@@ -8,37 +8,37 @@ default_acceleration_scaling_factor: 0.1
 # Specific joint properties can be changed with the keys [max_position, min_position, max_velocity, max_acceleration]
 # Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]
 joint_limits:
-  A1:
+  lbr_A1:
     has_velocity_limits: true
     max_velocity: 1.7104226669544429
     has_acceleration_limits: true
     max_acceleration: 10.0
-  A2:
+  lbr_A2:
     has_velocity_limits: true
     max_velocity: 1.7104226669544429
     has_acceleration_limits: true
     max_acceleration: 10.0
-  A3:
+  lbr_A3:
     has_velocity_limits: true
     max_velocity: 1.7453292519943295
     has_acceleration_limits: true
     max_acceleration: 10.0
-  A4:
+  lbr_A4:
     has_velocity_limits: true
     max_velocity: 2.2689280275926285
     has_acceleration_limits: true
     max_acceleration: 10.0
-  A5:
+  lbr_A5:
     has_velocity_limits: true
     max_velocity: 2.4434609527920612
     has_acceleration_limits: true
     max_acceleration: 10.0
-  A6:
+  lbr_A6:
     has_velocity_limits: true
     max_velocity: 3.1415926535897931
     has_acceleration_limits: true
     max_acceleration: 10.0
-  A7:
+  lbr_A7:
     has_velocity_limits: true
     max_velocity: 3.1415926535897931
     has_acceleration_limits: true

@@ -20,11 +20,20 @@ class LBRDescriptionMixin:
         robot_name: Optional[Union[LaunchConfiguration, str]] = LaunchConfiguration(
             "robot_name", default="lbr"
         ),
-        port_id: Optional[Union[LaunchConfiguration, str]] = LaunchConfiguration(
-            "port_id", default="30200"
-        ),
         mode: Optional[Union[LaunchConfiguration, bool]] = LaunchConfiguration(
             "mode", default="mock"
+        ),
+        system_config_path: Optional[
+            Union[LaunchConfiguration, str]
+        ] = PathJoinSubstitution(
+            [
+                FindPackageShare(
+                    LaunchConfiguration("sys_cfg_pkg", default="lbr_description")
+                ),
+                LaunchConfiguration(
+                    "sys_cfg", default="ros2_control/lbr_system_config.yaml"
+                ),
+            ]
         ),
     ) -> Dict[str, str]:
         robot_description = {
@@ -43,10 +52,10 @@ class LBRDescriptionMixin:
                     ".xacro",
                     " robot_name:=",
                     robot_name,
-                    " port_id:=",
-                    port_id,
                     " mode:=",
                     mode,
+                    " system_config_path:=",
+                    system_config_path,
                 ]
             )
         }
@@ -70,15 +79,6 @@ class LBRDescriptionMixin:
         )
 
     @staticmethod
-    def arg_port_id(default_value: str = "30200") -> DeclareLaunchArgument:
-        return DeclareLaunchArgument(
-            name="port_id",
-            default_value=default_value,
-            description="Port ID of the FRI communication. Valid in range [30200, 30209].\n"
-            "\tUsefull in multi-robot setups.",
-        )
-
-    @staticmethod
     def arg_mode(default_value: str = "mock") -> DeclareLaunchArgument:
         return DeclareLaunchArgument(
             name="mode",
@@ -94,10 +94,6 @@ class LBRDescriptionMixin:
     @staticmethod
     def param_robot_name() -> Dict[str, LaunchConfiguration]:
         return {"robot_name": LaunchConfiguration("robot_name", default="lbr")}
-
-    @staticmethod
-    def param_port_id() -> Dict[str, LaunchConfiguration]:
-        return {"port_id": LaunchConfiguration("port_id", default="30200")}
 
     @staticmethod
     def param_mode() -> Dict[str, LaunchConfiguration]:

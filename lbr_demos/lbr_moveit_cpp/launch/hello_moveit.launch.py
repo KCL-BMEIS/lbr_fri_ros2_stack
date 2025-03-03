@@ -5,7 +5,7 @@ from launch.actions import OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from lbr_bringup.description import LBRDescriptionMixin
-from lbr_bringup.move_group import LBRMoveGroupMixin
+from lbr_bringup.moveit import LBRMoveGroupMixin
 
 
 def hidden_setup(context: LaunchContext) -> List[LaunchDescriptionEntity]:

@@ -1,7 +1,7 @@
 from launch import LaunchDescription
 from launch.actions import RegisterEventHandler
 from launch.event_handlers import OnProcessStart
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from lbr_bringup.description import LBRDescriptionMixin
 from lbr_bringup.ros2_control import LBRROS2ControlMixin
 
@@ -12,17 +12,20 @@ def generate_launch_description() -> LaunchDescription:
     # launch arguments
     ld.add_action(LBRDescriptionMixin.arg_model())
     ld.add_action(LBRDescriptionMixin.arg_robot_name())
-    ld.add_action(LBRDescriptionMixin.arg_port_id())
+    ld.add_action(LBRROS2ControlMixin.arg_sys_cfg_pkg())
+    ld.add_action(LBRROS2ControlMixin.arg_sys_cfg())
     ld.add_action(LBRROS2ControlMixin.arg_ctrl_cfg_pkg())
     ld.add_action(LBRROS2ControlMixin.arg_ctrl_cfg())
     ld.add_action(LBRROS2ControlMixin.arg_ctrl())
 
-    # static transform world -> robot_name/world
+    # static transform world -> <robot_name>_floating_link
     ld.add_action(
         LBRDescriptionMixin.node_static_tf(
             tf=[0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
             parent="world",
-            child=PathJoinSubstitution([LaunchConfiguration("robot_name"), "world"]),
+            child=PythonExpression(
+                ["'", LaunchConfiguration("robot_name"), "' + '_floating_link'"]
+            ),
         )
     )
 
@@ -36,7 +39,9 @@ def generate_launch_description() -> LaunchDescription:
     ld.add_action(robot_state_publisher)
 
     # ros2 control node
-    ros2_control_node = LBRROS2ControlMixin.node_ros2_control(use_sim_time=False)
+    ros2_control_node = LBRROS2ControlMixin.node_ros2_control(
+        use_sim_time=False, robot_description=robot_description
+    )
     ld.add_action(ros2_control_node)
 
     # joint state broad caster and controller on ros2 control node start

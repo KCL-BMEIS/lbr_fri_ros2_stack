@@ -1,5 +1,5 @@
 from launch import LaunchDescription
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PythonExpression
 from lbr_bringup.description import LBRDescriptionMixin
 from lbr_bringup.gazebo import GazeboMixin
 from lbr_bringup.ros2_control import LBRROS2ControlMixin
@@ -13,15 +13,17 @@ def generate_launch_description() -> LaunchDescription:
     ld.add_action(LBRDescriptionMixin.arg_robot_name())
     ld.add_action(
         LBRROS2ControlMixin.arg_ctrl()
-    )  # Gazebo loads controller configuration through lbr_description/gazebo/*.xacro from lbr_ros2_control/config/lbr_controllers.yaml
+    )  # Gazebo loads controller configuration through lbr_description/gazebo/*.xacro from lbr_description/ros2_control/lbr_controllers.yaml
 
-    # static transform world -> robot_name/world
+    # static transform world -> <robot_name>_floating_link
     world_robot_tf = [0, 0, 0, 0, 0, 0]  # keep zero
     ld.add_action(
         LBRDescriptionMixin.node_static_tf(
             tf=world_robot_tf,
             parent="world",
-            child=PathJoinSubstitution([LaunchConfiguration("robot_name"), "world"]),
+            child=PythonExpression(
+                ["'", LaunchConfiguration("robot_name"), "' + '_floating_link'"]
+            ),
         )
     )
 
@@ -38,10 +40,10 @@ def generate_launch_description() -> LaunchDescription:
 
     # Gazebo
     ld.add_action(GazeboMixin.include_gazebo())  # Gazebo has its own controller manager
-    spawn_entity = GazeboMixin.node_spawn_entity(
-        tf=world_robot_tf
+    ld.add_action(GazeboMixin.node_clock_bridge())
+    ld.add_action(
+        GazeboMixin.node_create(tf=world_robot_tf)
     )  # spawns robot in Gazebo through robot_description topic of robot_state_publisher
-    ld.add_action(spawn_entity)
 
     # controllers
     joint_state_broadcaster = LBRROS2ControlMixin.node_controller_spawner(

@@ -1,0 +1,134 @@
+# Use of /** so that the configurations hold for controller
+# managers regardless of their namespace. Usefull in multi-robot setups.
+/**/controller_manager:
+  ros__parameters:
+    update_rate: 100
+
+    # ROS 2 control broadcasters
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    force_torque_broadcaster:
+      type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
+
+    # LBR ROS 2 control broadcasters
+    lbr_state_broadcaster:
+      type: lbr_ros2_control/LBRStateBroadcaster
+
+    # ROS 2 control controllers
+    joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    forward_position_controller:
+      type: position_controllers/JointGroupPositionController
+
+    # LBR ROS 2 control controllers
+    admittance_controller:
+      type: lbr_ros2_control/AdmittanceController
+
+    lbr_joint_position_command_controller:
+      type: lbr_ros2_control/LBRJointPositionCommandController
+
+    lbr_torque_command_controller:
+      type: lbr_ros2_control/LBRTorqueCommandController
+
+    lbr_wrench_command_controller:
+      type: lbr_ros2_control/LBRWrenchCommandController
+
+    twist_controller:
+      type: lbr_ros2_control/TwistController
+
+    io_command_controller:
+      type: lbr_ros2_control/IOCommandController
+
+# ROS 2 control broadcasters
+/**/force_torque_broadcaster:
+  ros__parameters:
+    frame_id: lbr_link_ee # namespace: https://github.com/ros2/rviz/issues/1103
+    sensor_name: estimated_ft_sensor
+
+# LBR ROS 2 control broadcasters
+/**/lbr_state_broadcaster:
+  ros__parameters:
+    robot_name: lbr
+
+# ROS 2 control controllers
+/**/joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      - lbr_A1
+      - lbr_A2
+      - lbr_A3
+      - lbr_A4
+      - lbr_A5
+      - lbr_A6
+      - lbr_A7
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    state_publish_rate: 50.0
+    action_monitor_rate: 20.0
+
+/**/forward_position_controller:
+  ros__parameters:
+    joints:
+      - lbr_A1
+      - lbr_A2
+      - lbr_A3
+      - lbr_A4
+      - lbr_A5
+      - lbr_A6
+      - lbr_A7
+    interface_name: position
+
+# LBR ROS 2 control controllers
+/**/lbr_joint_position_command_controller:
+  ros__parameters:
+    robot_name: lbr
+
+/**/lbr_torque_command_controller:
+  ros__parameters:
+    robot_name: lbr
+
+/**/lbr_wrench_command_controller:
+  ros__parameters:
+    robot_name: lbr
+
+/**/admittance_controller:
+  ros__parameters:
+    robot_name: lbr
+    admittance:
+      mass: [0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+      damping: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+      stiffness: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    inv_jac_ctrl:
+      chain_root: lbr_link_0
+      chain_tip: lbr_link_ee
+      damping: 0.2 # damping factor for the pseudo-inverse of the Jacobian
+      max_linear_velocity: 2.0 # maximum linear velocity
+      max_angular_velocity: 2.0 # maximum linear acceleration
+      joint_gains: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # joint gains
+      cartesian_gains: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # cartesian gains
+
+/**/twist_controller:
+  ros__parameters:
+    robot_name: lbr
+    inv_jac_ctrl:
+      chain_root: lbr_link_0
+      chain_tip: lbr_link_ee
+      twist_in_tip_frame: true # if true, the twist command is expressed in the tip frame, otherwise in the root frame
+      damping: 0.2 # damping factor for the pseudo-inverse of the Jacobian
+      max_linear_velocity: 0.1 # maximum linear velocity
+      max_angular_velocity: 0.1 # maximum linear acceleration
+      joint_gains: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # joint gains
+      cartesian_gains: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # cartesian gains
+    timeout: 0.2 # stop controller if no command is received within this time [s]
+
+/**/io_command_controller:
+  ros__parameters:
+    robot_name: lbr
+    command_interfaces.analog_io_names.interfaces: ["Speed", "analog_io_2"]
+    command_interfaces.boolean_io_names.interfaces: ["Start", "boolean_io_2"]
+    command_interfaces.digital_io_names.interfaces: ["digital_io_1", "digital_io_2"]

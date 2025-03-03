@@ -1,7 +1,7 @@
 /**/admittance_control:
   ros__parameters:
-    base_link: "link_0"
-    end_effector_link: "link_ee"
+    base_link: "lbr_link_0"
+    end_effector_link: "lbr_link_ee"
     f_ext_th: [2., 2., 2., 0.5, 0.5, 0.5]
     dq_gains: [1., 1., 1., 1., 1., 1., 1.]
     dx_gains: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1]

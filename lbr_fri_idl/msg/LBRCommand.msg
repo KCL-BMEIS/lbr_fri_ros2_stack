@@ -10,9 +10,9 @@ float64[7] joint_position
 float64[7] torque
 float64[6] wrench
 
-string[2] analog_io
-float64[2] analog_value
-string[8] digital_io
-uint64[8] digital_value
-#  * string boolean_io
-#  * unit64[8] boolean_value
+string[2] analog_io_names
+float64[2] analog_io_values 
+string[2] boolean_io_names   
+bool[2] boolean_io_values  
+string[2] digital_io_names
+uint64[2] digital_io_values 

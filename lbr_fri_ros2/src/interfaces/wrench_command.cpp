@@ -2,9 +2,9 @@
 
 namespace lbr_fri_ros2 {
 WrenchCommandInterface::WrenchCommandInterface(
-    const PIDParameters &pid_parameters, const CommandGuardParameters &command_guard_parameters,
+    const double &joint_position_tau, const CommandGuardParameters &command_guard_parameters,
     const std::string &command_guard_variant)
-    : BaseCommandInterface(pid_parameters, command_guard_parameters, command_guard_variant) {}
+    : BaseCommandInterface(joint_position_tau, command_guard_parameters, command_guard_variant) {}
 
 void WrenchCommandInterface::buffered_command_to_fri(fri_command_t_ref command,
                                                      const_idl_state_t_ref state) {
@@ -16,24 +16,34 @@ void WrenchCommandInterface::buffered_command_to_fri(fri_command_t_ref command,
     RCLCPP_ERROR(rclcpp::get_logger(LOGGER_NAME()), err.c_str());
     throw std::runtime_error(err);
   }
-  if (std::any_of(command_target_.joint_position.cbegin(), command_target_.joint_position.cend(),
-                  [](const double &v) { return std::isnan(v); }) ||
-      std::any_of(command_target_.wrench.cbegin(), command_target_.wrench.cend(),
-                  [](const double &v) { return std::isnan(v); })) {
-    this->init_command(state);
+
+  if (!joint_position_filter_.is_initialized()) {
+    joint_position_filter_.initialize(state.sample_time);
   }
-  if (!command_guard_) {
-    std::string err = "Uninitialized command guard.";
-    RCLCPP_ERROR(rclcpp::get_logger(LOGGER_NAME()), err.c_str());
+
+  if (!command_initialized_) {
+    std::string err = "Uninitialized command.";
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME()),
+                        ColorScheme::ERROR << err.c_str() << ColorScheme::ENDC);
     throw std::runtime_error(err);
   }
 
-  // PID
-  joint_position_pid_.compute(
-      command_target_.joint_position, state.measured_joint_position,
-      std::chrono::nanoseconds(static_cast<int64_t>(state.sample_time * 1.e9)),
-      command_.joint_position);
-  command_.wrench = command_target_.wrench;
+  if (!std::any_of(command_target_.joint_position.cbegin(), command_target_.joint_position.cend(),
+                   [](const double &v) { return std::isnan(v); }) &&
+      !std::any_of(command_target_.wrench.cbegin(), command_target_.wrench.cend(),
+                   [](const double &v) { return std::isnan(v); })) {
+    // write command_target_ to command_ (with exponential smooth on joint positions), else use
+    // internal command_
+    joint_position_filter_.compute(command_target_.joint_position, command_.joint_position);
+    command_.wrench = command_target_.wrench;
+  }
+
+  if (!command_guard_) {
+    std::string err = "Uninitialized command guard.";
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME()),
+                        ColorScheme::ERROR << err.c_str() << ColorScheme::ENDC);
+    throw std::runtime_error(err);
+  }
 
   // validate
   if (!command_guard_->is_valid_command(command_, state)) {

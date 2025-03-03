@@ -12,7 +12,7 @@ protected:
 
 public:
   WrenchCommandInterface() = delete;
-  WrenchCommandInterface(const PIDParameters &pid_parameters,
+  WrenchCommandInterface(const double &joint_position_tau,
                          const CommandGuardParameters &command_guard_parameters,
                          const std::string &command_guard_variant = "default");
 

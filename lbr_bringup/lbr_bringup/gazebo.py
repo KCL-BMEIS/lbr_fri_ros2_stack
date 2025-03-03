@@ -14,17 +14,18 @@ class GazeboMixin:
             PythonLaunchDescriptionSource(
                 PathJoinSubstitution(
                     [
-                        FindPackageShare("gazebo_ros"),
+                        FindPackageShare("ros_gz_sim"),
                         "launch",
-                        "gazebo.launch.py",
+                        "gz_sim.launch.py",
                     ]
-                )
+                ),
             ),
+            launch_arguments={"gz_args": "-r empty.sdf"}.items(),
             **kwargs,
         )
 
     @staticmethod
-    def node_spawn_entity(
+    def node_create(
         robot_name: Optional[Union[LaunchConfiguration, str]] = LaunchConfiguration(
             "robot_name", default="lbr"
         ),
@@ -34,16 +35,27 @@ class GazeboMixin:
         label = ["-x", "-y", "-z", "-R", "-P", "-Y"]
         tf = [str(x) for x in tf]
         return Node(
-            package="gazebo_ros",
-            executable="spawn_entity.py",
+            package="ros_gz_sim",
+            executable="create",
             arguments=[
                 "-topic",
                 "robot_description",
-                "-entity",
+                "-name",
                 robot_name,
+                "-allow_renaming",
             ]
             + [item for pair in zip(label, tf) for item in pair],
             output="screen",
             namespace=robot_name,
+            **kwargs,
+        )
+
+    @staticmethod
+    def node_clock_bridge(**kwargs) -> Node:
+        return Node(
+            package="ros_gz_bridge",
+            executable="parameter_bridge",
+            arguments=["/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock"],
+            output="screen",
             **kwargs,
         )

@@ -3,56 +3,71 @@
 
 #include <algorithm>
 #include <array>
-#include <chrono>
 #include <cmath>
+#include <limits>
 
-#include "control_toolbox/filters.hpp"
-#include "control_toolbox/pid_ros.hpp"
+#include "rclcpp/logger.hpp"
+#include "rclcpp/logging.hpp"
 
-#include "friLBRClient.h"
-
-#include "lbr_fri_idl/msg/lbr_state.hpp"
+#include "lbr_fri_ros2/types.hpp"
 
 namespace lbr_fri_ros2 {
 class ExponentialFilter {
 public:
   /**
-   * @brief Construct a new Exponential Filter object. Performs exponential smoothing with a
-   * #cutoff_frequency_ according to
-   * https://dsp.stackexchange.com/questions/40462/exponential-moving-average-cut-off-frequency.
+   * @brief Construct a new ExponentialFilter object.
    *
    */
   ExponentialFilter();
 
   /**
-   * @brief Construct a new Exponential Filter object. Performs exponential smoothing with a
-   * #cutoff_frequency_ according to
-   * https://dsp.stackexchange.com/questions/40462/exponential-moving-average-cut-off-frequency.
+   * @brief Construct a new ExponentialFilter object.
    *
-   * @param[in] cutoff_frequency Frequency in Hz.
-   * @param[in] sample_time Sample time in seconds.
+   * @param[in] tau Time constant in seconds.
    */
-  ExponentialFilter(const double &cutoff_frequency, const double &sample_time);
+  ExponentialFilter(const double &tau);
 
   /**
-   * @brief Compute the exponential smoothing using the control_toolbox
-   * https://github.com/ros-controls/control_toolbox.
+   * @brief Initialize the filter from members. Computes the new #alpha_ following
+   * alpha = 1.0 - exp(-sample_time / tau).
+   *
+   * If tau << sample_time => alpha -> 1 (very fast response, no smoothing)
+   * If tau >> sample_time => alpha -> 0 (very slow response, heavy smoothing)
+   *
+   * @param[in] sample_time Sample time in seconds.
+   */
+  void initialize(const double &sample_time);
+
+  /**
+   * @brief Initialize the filter. Computes the new #alpha_ following
+   * alpha = 1.0 - exp(-sample_time / tau).
+   *
+   * If tau << sample_time => alpha -> 1 (very fast response, no smoothing)
+   * If tau >> sample_time => alpha -> 0 (very slow response, heavy smoothing)
+   *
+   * @param[in] tau Time constant in seconds.
+   * @param[in] sample_time Sample time in seconds.
+   */
+  void initialize(const double &tau, const double &sample_time);
+
+  /**
+   * @brief Compute the exponential smoothing. Internally computes the new smoothed value following
+   * smoothed = alpha * current + (1 - alpha) * previous.
    *
    * @param[in] current The current value.
    * @param[in] previous The previous smoothed value.
    * @return double The returned smoothed value.
    */
   inline double compute(const double &current, const double &previous) {
-    return filters::exponentialSmoothing(current, previous, alpha_);
+    return alpha_ * current + (1.0 - alpha_) * previous;
   };
 
   /**
-   * @brief Set the cutoff frequency object. Internally computes the new #alpha_.
+   * @brief Get the time constant #tau_.
    *
-   * @param[in] cutoff_frequency Frequency in Hz.
-   * @param[in] sample_time Sample time in seconds.
+   * @return const double&
    */
-  void set_cutoff_frequency(const double &cutoff_frequency, const double &sample_time);
+  inline const double &get_tau() const { return tau_; };
 
   /**
    * @brief Get #sample_time_.
@@ -70,16 +85,6 @@ public:
 
 protected:
   /**
-   * @brief Compute alpha given the cutoff frequency and the sample time.
-   *
-   * @param[in] cutoff_frequency Frequency in Hz.
-   * @param[in] sample_time Sample time in seconds.
-   * @return double Alpha based on
-   * https://dsp.stackexchange.com/questions/40462/exponential-moving-average-cut-off-frequency.
-   */
-  double compute_alpha_(const double &cutoff_frequency, const double &sample_time);
-
-  /**
    * @brief Validate alpha in [0, 1].
    *
    * @param[in] alpha Alpha parameter for smoothing.
@@ -88,56 +93,30 @@ protected:
    */
   bool validate_alpha_(const double &alpha);
 
-  double cutoff_frequency_; /**< Frequency in Hz.*/
-  double sample_time_;      /**< Sample time in seconds.*/
-  double
-      alpha_; /**< Alpha parameter based on
-                 https://dsp.stackexchange.com/questions/40462/exponential-moving-average-cut-off-frequency.*/
+  double tau_;         /**< Time constant in seconds.*/
+  double sample_time_; /**< Sample time in seconds.*/
+  double alpha_;       /**< Smoothing parameter in [0, 1].*/
 };
 
 class JointExponentialFilterArray {
-  using value_array_t = std::array<double, KUKA::FRI::LBRState::NUMBER_OF_JOINTS>;
+protected:
+  static constexpr char LOGGER_NAME[] = "lbr_fri_ros2::JointExponentialFilterArray";
 
 public:
   JointExponentialFilterArray() = default;
+  JointExponentialFilterArray(const double &tau);
 
-  void compute(const double *const current, value_array_t &previous);
-  void initialize(const double &cutoff_frequency, const double &sample_time);
+  void compute(const double *const current, jnt_array_t_ref previous);
+  void compute(const_jnt_array_t_ref current, jnt_array_t_ref previous);
+  void initialize(const double &sample_time);
+  void initialize(const double &tau, const double &sample_time);
   inline const bool &is_initialized() const { return initialized_; };
+
+  void log_info() const;
 
 protected:
   bool initialized_{false};              /**< True if initialized.*/
   ExponentialFilter exponential_filter_; /**< Exponential filter applied to all joints.*/
-};
-
-struct PIDParameters {
-  double p{0.0};          /**< Proportional gain.*/
-  double i{0.0};          /**< Integral gain.*/
-  double d{0.0};          /**< Derivative gain.*/
-  double i_max{0.0};      /**< Maximum integral value.*/
-  double i_min{0.0};      /**< Minimum integral value.*/
-  bool antiwindup{false}; /**< Antiwindup enabled.*/
-};
-
-class JointPIDArray {
-protected:
-  static constexpr char LOGGER_NAME[] = "lbr_fri_ros2::JointPIDArray";
-  using value_array_t = std::array<double, KUKA::FRI::LBRState::NUMBER_OF_JOINTS>;
-  using pid_array_t = std::array<control_toolbox::Pid, KUKA::FRI::LBRState::NUMBER_OF_JOINTS>;
-
-public:
-  JointPIDArray() = delete;
-  JointPIDArray(const PIDParameters &pid_parameters);
-
-  void compute(const value_array_t &command_target, const value_array_t &state,
-               const std::chrono::nanoseconds &dt, value_array_t &command);
-  void compute(const value_array_t &command_target, const double *state,
-               const std::chrono::nanoseconds &dt, value_array_t &command);
-  void log_info() const;
-
-protected:
-  PIDParameters pid_parameters_; /**< PID parameters for all joints.*/
-  pid_array_t pid_controllers_;  /**< PID controllers for each joint.*/
 };
 } // namespace lbr_fri_ros2
 #endif // LBR_FRI_ROS2__FILTERS_HPP_

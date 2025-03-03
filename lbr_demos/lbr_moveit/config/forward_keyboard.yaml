@@ -1,0 +1,52 @@
+/**/forward_keyboard:
+  ros__parameters:
+    velocity_scales:
+      translation:
+        x: 1.0
+        y: 1.0
+        z: 1.0
+      rotation:
+        x: 1.0
+        y: 1.0
+        z: 1.0
+      joints:
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+        - 1.0
+    keyboard_layout:
+      # uses pynput: https://pypi.org/project/pynput/
+      translation:
+        x:
+          increase: "w"
+          decrease: "s"
+        y:
+          increase: "a"
+          decrease: "d"
+        z:
+          increase: "Key.up"
+          decrease: "Key.down"
+      rotation:
+        x:
+          increase: "u"
+          decrease: "j"
+        y:
+          increase: "h"
+          decrease: "k"
+        z:
+          increase: "Key.left"
+          decrease: "Key.right"
+      joints:
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+        - "5"
+        - "6"
+        - "7"
+      escape: "Key.esc"
+      pause: "p"
+      reverse_joints: "r"

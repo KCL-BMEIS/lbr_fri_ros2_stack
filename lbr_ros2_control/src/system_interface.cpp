@@ -11,22 +11,15 @@ SystemInterface::on_init(const hardware_interface::HardwareInfo &system_info) {
     return ret;
   }
 
-  // parameters_ from config/lbr_system_interface.xacro
+  // parameters_ from lbr_system_interface.xacro (default configurations located in
+  // lbr_description/ros2_control/lbr_system_interface.xacro)
   if (!parse_parameters_(system_info)) {
     return controller_interface::CallbackReturn::ERROR;
   }
 
   // setup driver
-  lbr_fri_ros2::PIDParameters pid_parameters;
   lbr_fri_ros2::CommandGuardParameters command_guard_parameters;
   lbr_fri_ros2::StateInterfaceParameters state_interface_parameters;
-  pid_parameters.p = parameters_.pid_p;
-  pid_parameters.i = parameters_.pid_i;
-  pid_parameters.d = parameters_.pid_d;
-  pid_parameters.i_max = parameters_.pid_i_max;
-  pid_parameters.i_min = parameters_.pid_i_min;
-  pid_parameters.antiwindup = parameters_.pid_antiwindup;
-
   for (std::size_t idx = 0; idx < system_info.joints.size(); ++idx) {
     command_guard_parameters.joint_names[idx] = system_info.joints[idx].name;
     command_guard_parameters.max_positions[idx] =
@@ -38,14 +31,12 @@ SystemInterface::on_init(const hardware_interface::HardwareInfo &system_info) {
     command_guard_parameters.max_torques[idx] =
         std::stod(system_info.joints[idx].parameters.at("max_torque"));
   }
-  state_interface_parameters.external_torque_cutoff_frequency =
-      parameters_.external_torque_cutoff_frequency;
-  state_interface_parameters.measured_torque_cutoff_frequency =
-      parameters_.measured_torque_cutoff_frequency;
+  state_interface_parameters.external_torque_tau = parameters_.external_torque_tau;
+  state_interface_parameters.measured_torque_tau = parameters_.measured_torque_tau;
 
   try {
     async_client_ptr_ = std::make_shared<lbr_fri_ros2::AsyncClient>(
-        parameters_.client_command_mode, pid_parameters, command_guard_parameters,
+        parameters_.client_command_mode, parameters_.joint_position_tau, command_guard_parameters,
         parameters_.command_guard_variant, state_interface_parameters, parameters_.open_loop);
     app_ptr_ = std::make_unique<lbr_fri_ros2::App>(async_client_ptr_);
   } catch (const std::exception &e) {
@@ -61,6 +52,13 @@ SystemInterface::on_init(const hardware_interface::HardwareInfo &system_info) {
   nan_last_hw_states_();
 
   // setup force-torque estimator
+  std::transform(info_.sensors[1].parameters.at("enabled").begin(),
+                 info_.sensors[1].parameters.at("enabled").end(),
+                 info_.sensors[1].parameters.at("enabled").begin(),
+                 ::tolower); // convert to lower case
+  ft_parameters_.enabled = info_.sensors[1].parameters.at("enabled") == "true";
+  ft_parameters_.update_rate = std::stoul(info_.sensors[1].parameters.at("update_rate"));
+  ft_parameters_.rt_prio = std::stoi(info_.sensors[1].parameters.at("rt_prio"));
   ft_parameters_.chain_root = info_.sensors[1].parameters.at("chain_root");
   ft_parameters_.chain_tip = info_.sensors[1].parameters.at("chain_tip");
   ft_parameters_.damping = std::stod(info_.sensors[1].parameters.at("damping"));
@@ -70,36 +68,19 @@ SystemInterface::on_init(const hardware_interface::HardwareInfo &system_info) {
   ft_parameters_.torque_x_th = std::stod(info_.sensors[1].parameters.at("torque_x_th"));
   ft_parameters_.torque_y_th = std::stod(info_.sensors[1].parameters.at("torque_y_th"));
   ft_parameters_.torque_z_th = std::stod(info_.sensors[1].parameters.at("torque_z_th"));
-  ft_estimator_ptr_ = std::make_unique<lbr_fri_ros2::FTEstimator>(
-      info_.original_xml, ft_parameters_.chain_root, ft_parameters_.chain_tip,
-      lbr_fri_ros2::FTEstimator::cart_array_t{
-          ft_parameters_.force_x_th,
-          ft_parameters_.force_y_th,
-          ft_parameters_.force_z_th,
-          ft_parameters_.torque_x_th,
-          ft_parameters_.torque_y_th,
-          ft_parameters_.torque_z_th,
-      });
-
-  // 初始化模拟 IO 和数字 IO 的键值映射
-  for (const auto &param : info_.hardware_parameters) {
-    if (param.first == "analog_io") {
-      std::stringstream ss(param.second);
-      std::string name;
-      while (std::getline(ss, name, ',')) {
-        analog_value[name] = 0.0;  // 默认值为 0.0
-        measured_analog_value[name] = 0.0;
-        commanded_analog_value[name] =0.0;
-      }
-    } else if (param.first == "digital_io") {
-      std::stringstream ss(param.second);
-      std::string name;
-      while (std::getline(ss, name, ',')) {
-        digital_value[name] = 0;  // 默认值为 0
-        measured_digital_value[name] = 0.0;
-        commanded_digital_value[name] =0.0;
-      }
-    }
+  if (ft_parameters_.enabled) {
+    ft_estimator_impl_ptr_ = std::make_shared<lbr_fri_ros2::FTEstimatorImpl>(
+        info_.original_xml, ft_parameters_.chain_root, ft_parameters_.chain_tip,
+        lbr_fri_ros2::cart_array_t{
+            ft_parameters_.force_x_th,
+            ft_parameters_.force_y_th,
+            ft_parameters_.force_z_th,
+            ft_parameters_.torque_x_th,
+            ft_parameters_.torque_y_th,
+            ft_parameters_.torque_z_th,
+        });
+    ft_estimator_ptr_ = std::make_unique<lbr_fri_ros2::FTEstimator>(ft_estimator_impl_ptr_,
+                                                                    ft_parameters_.update_rate);
   }
 
   if (!verify_number_of_joints_()) {
@@ -127,7 +108,6 @@ SystemInterface::on_init(const hardware_interface::HardwareInfo &system_info) {
 
 std::vector<hardware_interface::StateInterface> SystemInterface::export_state_interfaces() {
   std::vector<hardware_interface::StateInterface> state_interfaces;
-
   // state interfaces of type double
   for (std::size_t i = 0; i < info_.joints.size(); ++i) {
     state_interfaces.emplace_back(info_.joints[i].name, hardware_interface::HW_IF_POSITION,
@@ -177,27 +157,15 @@ std::vector<hardware_interface::StateInterface> SystemInterface::export_state_in
   state_interfaces.emplace_back(auxiliary_sensor.name, HW_IF_TIME_STAMP_NANO_SEC,
                                 &hw_time_stamp_nano_sec_);
 
-  // additional force-torque state interface
-  const auto &estimated_ft_sensor = info_.sensors[1];
-  state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_FORCE_X, &hw_ft_[0]);
-  state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_FORCE_Y, &hw_ft_[1]);
-  state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_FORCE_Z, &hw_ft_[2]);
-  state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_TORQUE_X, &hw_ft_[3]);
-  state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_TORQUE_Y, &hw_ft_[4]);
-  state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_TORQUE_Z, &hw_ft_[5]);
-
-  // 添加模拟 IO 状态接口
-  for (const auto &kv : measured_analog_value) {
-    state_interfaces.emplace_back(
-        hardware_interface::StateInterface(kv.first, "value", &measured_analog_value[kv.first]));
-  }
-
-  // 添加数字 IO 状态接口
-  for (const auto &kv : measured_digital_value) {
-    // 数字 IO 的值是 uint64_t，但 StateInterface 只支持 double，需要进行类型转换
-    double temp_value = static_cast<double>(measured_digital_value[kv.first]);
-    state_interfaces.emplace_back(
-        hardware_interface::StateInterface(kv.first, "value", &temp_value));
+  // additional force-torque state interface (if enabled)
+  if (ft_parameters_.enabled) {
+    const auto &estimated_ft_sensor = info_.sensors[1];
+    state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_FORCE_X, &hw_ft_[0]);
+    state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_FORCE_Y, &hw_ft_[1]);
+    state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_FORCE_Z, &hw_ft_[2]);
+    state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_TORQUE_X, &hw_ft_[3]);
+    state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_TORQUE_Y, &hw_ft_[4]);
+    state_interfaces.emplace_back(estimated_ft_sensor.name, HW_IF_TORQUE_Z, &hw_ft_[5]);
   }
 
   return state_interfaces;
@@ -221,21 +189,18 @@ std::vector<hardware_interface::CommandInterface> SystemInterface::export_comman
   command_interfaces.emplace_back(wrench.name, HW_IF_TORQUE_X, &hw_lbr_command_.wrench[3]);
   command_interfaces.emplace_back(wrench.name, HW_IF_TORQUE_Y, &hw_lbr_command_.wrench[4]);
   command_interfaces.emplace_back(wrench.name, HW_IF_TORQUE_Z, &hw_lbr_command_.wrench[5]);
-
-  // 添加模拟 IO 命令接口
-  for (const auto &kv : commanded_analog_value) {
-    command_interfaces.emplace_back(
-        hardware_interface::CommandInterface(kv.first, "value", &commanded_analog_value[kv.first]));
+  
+  // IO control command interfaces
+  if (info_.gpios.size() > 1) {
+    const auto &io_gpio = info_.gpios[1];
+    // 假定顺序为：analog_io_1, analog_io_2, boolean_io_1, boolean_io_2, digital_io_1, digital_io_2
+    command_interfaces.emplace_back(io_gpio.name, "Speed", &io_command_[0]);
+    command_interfaces.emplace_back(io_gpio.name, "analog_io_2", &io_command_[1]);
+    command_interfaces.emplace_back(io_gpio.name, "Start", &io_command_[2]);
+    command_interfaces.emplace_back(io_gpio.name, "boolean_io_2", &io_command_[3]);
+    command_interfaces.emplace_back(io_gpio.name, "digital_io_1", &io_command_[4]);
+    command_interfaces.emplace_back(io_gpio.name, "digital_io_2", &io_command_[5]);
   }
-
-  // 添加数字 IO 命令接口
-  for (const auto &kv : commanded_digital_value) {
-    // 数字 IO 的值是 uint64_t，但 CommandInterface 只支持 double，需要进行类型转换
-    double temp_command = static_cast<double>(commanded_digital_value[kv.first]);
-    command_interfaces.emplace_back(
-        hardware_interface::CommandInterface(kv.first, "value", &temp_command));
-  }
-
   return command_interfaces;
 }
 
@@ -275,12 +240,6 @@ controller_interface::CallbackReturn SystemInterface::on_activate(const rclcpp_l
   RCLCPP_INFO_STREAM(rclcpp::get_logger(LOGGER_NAME), lbr_fri_ros2::ColorScheme::OKGREEN
                                                           << "Robot connected"
                                                           << lbr_fri_ros2::ColorScheme::ENDC);
-  RCLCPP_INFO_STREAM(rclcpp::get_logger(LOGGER_NAME),
-                     "Control mode '"
-                         << lbr_fri_ros2::EnumMaps::control_mode_map(
-                                async_client_ptr_->get_state_interface()->get_state().control_mode)
-                                .c_str()
-                         << "'");
   RCLCPP_INFO(rclcpp::get_logger(LOGGER_NAME), "Sample time %.3f s / %.1f Hz",
               async_client_ptr_->get_state_interface()->get_state().sample_time,
               1. / async_client_ptr_->get_state_interface()->get_state().sample_time);
@@ -301,6 +260,18 @@ controller_interface::CallbackReturn SystemInterface::on_activate(const rclcpp_l
     }
     std::this_thread::sleep_for(std::chrono::seconds(1));
   }
+
+  // ft sensor
+  if (!ft_estimator_ptr_ && ft_parameters_.enabled) {
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
+                        lbr_fri_ros2::ColorScheme::ERROR
+                            << "Failed to instantiate FTEstimator despite user request."
+                            << lbr_fri_ros2::ColorScheme::ENDC);
+    return controller_interface::CallbackReturn::ERROR;
+  }
+  if (ft_estimator_ptr_) {
+    ft_estimator_ptr_->run_async(ft_parameters_.rt_prio);
+  }
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -308,6 +279,9 @@ controller_interface::CallbackReturn
 SystemInterface::on_deactivate(const rclcpp_lifecycle::State &) {
   app_ptr_->request_stop();
   app_ptr_->close_udp_socket();
+  if (ft_estimator_ptr_) {
+    ft_estimator_ptr_->request_stop();
+  }
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
@@ -336,6 +310,7 @@ hardware_interface::return_type SystemInterface::read(const rclcpp::Time & /*tim
                             << lbr_fri_ros2::ColorScheme::ENDC);
     app_ptr_->request_stop();
     app_ptr_->close_udp_socket();
+    ft_estimator_ptr_->request_stop();
     return hardware_interface::return_type::ERROR;
   }
 
@@ -356,31 +331,13 @@ hardware_interface::return_type SystemInterface::read(const rclcpp::Time & /*tim
   update_last_hw_states_();
 
   // additional force-torque state interface
-  ft_estimator_ptr_->compute(hw_lbr_state_.measured_joint_position, hw_lbr_state_.external_torque,
-                             hw_ft_, ft_parameters_.damping);
-
-  // 更新模拟 IO 测量值
-  for (size_t i = 0; i < hw_lbr_state_.analog_io.size() && i < hw_lbr_state_.measured_analog_value.size(); ++i) {
-    try {
-      analog_value[hw_lbr_state_.analog_io[i]] = hw_lbr_state_.measured_analog_value[i];
-    } catch (const std::exception &e) {
-      RCLCPP_WARN(rclcpp::get_logger(LOGGER_NAME),
-                  "Failed to read analog IO %s: %s",
-                  hw_lbr_state_.analog_io[i].c_str(), e.what());
-    }
+  if (ft_parameters_.enabled) {
+    // note that (if enabled) the computation is performed asynchronously to not block the main
+    // thread
+    ft_estimator_impl_ptr_->set_q(hw_lbr_state_.measured_joint_position);
+    ft_estimator_impl_ptr_->set_tau_ext(hw_lbr_state_.external_torque);
+    ft_estimator_impl_ptr_->get_f_ext_tf(hw_ft_);
   }
-
-  // 更新数字 IO 测量值
-  for (size_t i = 0; i < hw_lbr_state_.digital_io.size() && i < hw_lbr_state_.measured_digital_value.size(); ++i) {
-    try {
-      digital_value[hw_lbr_state_.digital_io[i]] = hw_lbr_state_.measured_digital_value[i];
-    } catch (const std::exception &e) {
-      RCLCPP_WARN(rclcpp::get_logger(LOGGER_NAME),
-                  "Failed to read digital IO %s: %s",
-                  hw_lbr_state_.digital_io[i].c_str(), e.what());
-    }
-  }
-
   return hardware_interface::return_type::OK;
 }
 
@@ -389,29 +346,6 @@ hardware_interface::return_type SystemInterface::write(const rclcpp::Time & /*ti
   if (hw_session_state_ != KUKA::FRI::COMMANDING_ACTIVE) {
     return hardware_interface::return_type::OK;
   }
-
- // 写入模拟 IO 命令值
-  for (size_t i = 0; i < hw_lbr_command_.analog_io.size() && i < hw_lbr_command_.analog_value.size(); ++i) {
-    try {
-      hw_lbr_command_.analog_value[i] = analog_value[hw_lbr_command_.analog_io[i]];
-    } catch (const std::exception &e) {
-      RCLCPP_WARN(rclcpp::get_logger(LOGGER_NAME),
-                  "Failed to write analog IO %s: %s",
-                  hw_lbr_command_.analog_io[i].c_str(), e.what());
-    }
-  }
-
-  // 写入数字 IO 命令值
-  for (size_t i = 0; i < hw_lbr_command_.digital_io.size() && i < hw_lbr_command_.digital_value.size(); ++i) {
-    try {
-      hw_lbr_command_.digital_value[i] = digital_value[hw_lbr_command_.digital_io[i]];
-    } catch (const std::exception &e) {
-      RCLCPP_WARN(rclcpp::get_logger(LOGGER_NAME),
-                  "Failed to write digital IO %s: %s",
-                  hw_lbr_command_.digital_io[i].c_str(), e.what());
-    }
-  }
-
   async_client_ptr_->get_command_interface()->buffer_command_target(hw_lbr_command_);
   return hardware_interface::return_type::OK;
 }
@@ -468,22 +402,13 @@ bool SystemInterface::parse_parameters_(const hardware_interface::HardwareInfo &
     parameters_.rt_prio = std::stoul(info_.hardware_parameters["rt_prio"]);
     std::transform(info_.hardware_parameters["open_loop"].begin(),
                    info_.hardware_parameters["open_loop"].end(),
-                   info_.hardware_parameters["open_loop"].begin(), ::tolower);
+                   info_.hardware_parameters["open_loop"].begin(),
+                   ::tolower); // convert to lower case
     parameters_.open_loop = info_.hardware_parameters["open_loop"] == "true";
-    std::transform(info_.hardware_parameters["pid_antiwindup"].begin(),
-                   info_.hardware_parameters["pid_antiwindup"].end(),
-                   info_.hardware_parameters["pid_antiwindup"].begin(), ::tolower);
-    parameters_.pid_p = std::stod(info_.hardware_parameters["pid_p"]);
-    parameters_.pid_i = std::stod(info_.hardware_parameters["pid_i"]);
-    parameters_.pid_d = std::stod(info_.hardware_parameters["pid_d"]);
-    parameters_.pid_i_max = std::stod(info_.hardware_parameters["pid_i_max"]);
-    parameters_.pid_i_min = std::stod(info_.hardware_parameters["pid_i_min"]);
-    parameters_.pid_antiwindup = info_.hardware_parameters["pid_antiwindup"] == "true";
+    parameters_.joint_position_tau = std::stod(info_.hardware_parameters["joint_position_tau"]);
     parameters_.command_guard_variant = system_info.hardware_parameters.at("command_guard_variant");
-    parameters_.external_torque_cutoff_frequency =
-        std::stod(info_.hardware_parameters["external_torque_cutoff_frequency"]);
-    parameters_.measured_torque_cutoff_frequency =
-        std::stod(info_.hardware_parameters["measured_torque_cutoff_frequency"]);
+    parameters_.external_torque_tau = std::stod(info_.hardware_parameters["external_torque_tau"]);
+    parameters_.measured_torque_tau = std::stod(info_.hardware_parameters["measured_torque_tau"]);
   } catch (const std::out_of_range &e) {
     RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
                         lbr_fri_ros2::ColorScheme::ERROR
@@ -498,6 +423,7 @@ void SystemInterface::nan_command_interfaces_() {
   hw_lbr_command_.joint_position.fill(std::numeric_limits<double>::quiet_NaN());
   hw_lbr_command_.torque.fill(std::numeric_limits<double>::quiet_NaN());
   hw_lbr_command_.wrench.fill(std::numeric_limits<double>::quiet_NaN());
+  io_command_.fill(std::numeric_limits<double>::quiet_NaN()); // 新增：将 IO 命令置为 NaN
 }
 
 void SystemInterface::nan_state_interfaces_() {
@@ -533,12 +459,11 @@ void SystemInterface::nan_state_interfaces_() {
 }
 
 bool SystemInterface::verify_number_of_joints_() {
-  if (info_.joints.size() != KUKA::FRI::LBRState::NUMBER_OF_JOINTS) {
+  if (info_.joints.size() != lbr_fri_ros2::N_JNTS) {
     RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
                         lbr_fri_ros2::ColorScheme::ERROR
-                            << "Expected '" << KUKA::FRI::LBRState::NUMBER_OF_JOINTS
-                            << "' joints in URDF, got '" << info_.joints.size() << "'"
-                            << lbr_fri_ros2::ColorScheme::ENDC);
+                            << "Expected '" << lbr_fri_ros2::N_JNTS << "' joints in URDF, got '"
+                            << info_.joints.size() << "'" << lbr_fri_ros2::ColorScheme::ENDC);
     return false;
   }
   return true;
@@ -622,14 +547,17 @@ bool SystemInterface::verify_sensors_() {
   if (!verify_auxiliary_sensor_()) {
     return false;
   }
-  if (!verify_estimated_ft_sensor_()) {
-    return false;
+  if (ft_parameters_.enabled) {
+    if (!verify_estimated_ft_sensor_()) {
+      return false;
+    }
   }
   return true;
 }
 
 bool SystemInterface::verify_auxiliary_sensor_() {
-  // check all interfaces are defined in config/lbr_system_interface.xacro
+  // check all interfaces are defined in lbr_system_interface.xacro (located in
+  // lbr_description/ros2_control/lbr_system_interface.xacro)
   const auto &auxiliary_sensor = info_.sensors[0];
   if (auxiliary_sensor.name != HW_IF_AUXILIARY_PREFIX) {
     RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
@@ -731,6 +659,24 @@ bool SystemInterface::verify_gpios_() {
                             << lbr_fri_ros2::ColorScheme::ENDC);
     return false;
   }
+   // 验证 io_command 的名称和接口数量
+   if (info_.gpios[1].name != "io_command") {
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
+                        lbr_fri_ros2::ColorScheme::ERROR << "GPIO '" << info_.gpios[1].name.c_str()
+                                                         << "' received invalid name. Expected 'io_command'"
+                                                         << lbr_fri_ros2::ColorScheme::ENDC);
+    return false;
+  }
+  if (info_.gpios[1].command_interfaces.size() != 6) {
+    RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
+                        lbr_fri_ros2::ColorScheme::ERROR
+                            << "GPIO '" << info_.gpios[1].name.c_str()
+                            << "' received invalid number of command interfaces. Received '"
+                            << info_.gpios[1].command_interfaces.size() << "', expected '6'"
+                            << lbr_fri_ros2::ColorScheme::ENDC);
+    return false;
+  }
+
   return true;
 }
 

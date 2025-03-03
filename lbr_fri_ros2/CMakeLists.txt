@@ -11,10 +11,10 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(control_toolbox REQUIRED)
 find_package(eigen3_cmake_module REQUIRED)
 find_package(Eigen3)
 find_package(FRIClient REQUIRED)
+find_package(geometry_msgs REQUIRED)
 find_package(kdl_parser REQUIRED)
 find_package(lbr_fri_idl REQUIRED)
 find_package(orocos_kdl_vendor REQUIRED)
@@ -26,9 +26,9 @@ find_package(urdf REQUIRED)
 add_library(lbr_fri_ros2
   SHARED
     src/interfaces/analog_command.cpp
-    src/interfaces/digital_command.cpp 
-    src/interfaces/io_command.cpp 
     src/interfaces/base_command.cpp
+    src/interfaces/boolean_command.cpp
+    src/interfaces/digital_command.cpp
     src/interfaces/position_command.cpp
     src/interfaces/state.cpp
     src/interfaces/torque_command.cpp
@@ -36,8 +36,11 @@ add_library(lbr_fri_ros2
     src/app.cpp
     src/async_client.cpp
     src/command_guard.cpp
+    src/control.cpp
     src/filters.cpp
     src/ft_estimator.cpp
+    src/kinematics.cpp
+    src/worker.cpp
 )
 
 target_include_directories(lbr_fri_ros2
@@ -47,8 +50,8 @@ target_include_directories(lbr_fri_ros2
 )
 
 ament_target_dependencies(lbr_fri_ros2
-  control_toolbox
   Eigen3
+  geometry_msgs
   kdl_parser
   lbr_fri_idl
   orocos_kdl_vendor
@@ -62,10 +65,10 @@ target_link_libraries(lbr_fri_ros2
 
 ament_export_targets(lbr_fri_ros2_export HAS_LIBRARY_TARGET)
 ament_export_dependencies(
-  control_toolbox
   eigen3_cmake_module
   Eigen3
   FRIClient
+  geometry_msgs
   kdl_parser
   lbr_fri_idl
   orocos_kdl_vendor
@@ -87,12 +90,8 @@ install(
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
-  # ament_add_gtest(test_command_interfaces test/test_command_interfaces.cpp)
-  # target_link_libraries(test_command_interfaces lbr_fri_ros2)
-
-  # Add test for AnalogCommandInterface
-  ament_add_gtest(test_io_command_interfaces test/test_io_command_interfaces.cpp)
-  target_link_libraries(test_io_command_interfaces lbr_fri_ros2)
+  ament_add_gtest(test_command_interfaces test/test_command_interfaces.cpp)
+  target_link_libraries(test_command_interfaces lbr_fri_ros2)
 
   # # some examples of how to use the interfaces
   # add_executable(test_position_command test/test_position_command.cpp)

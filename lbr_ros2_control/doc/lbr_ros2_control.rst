@@ -30,7 +30,7 @@ Hardware components and controllers are loaded as plugins (components) by the ``
 The ``controller_manager::ControllerManager`` has a node, the `controller_manager <https://github.com/ros-controls/ros2_control/blob/humble/controller_manager/src/ros2_control_node.cpp>`_:octicon:`link-external`. 
 
 - Hardware plugins are read from the ``robot_descritption`` parameter of the ``robot_state_publisher`` node and loaded at runtime.
-- Parameters, such as ``update_rate``, the configured controllers, are simply set as node parameters, see e.g. `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_ros2_control/config/lbr_controllers.yaml>`_:octicon:`link-external`.
+- Parameters, such as ``update_rate``, the configured controllers, are simply set as node parameters, see e.g. `lbr_controllers.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_description/ros2_control/lbr_controllers.yaml>`_:octicon:`link-external`.
 
 Hardware Plugin
 ---------------
@@ -42,8 +42,8 @@ The ``lbr_ros2_control::SystemInterface`` plugin implements a ``hardware_interfa
 .. thumbnail:: img/lbr_ros2_control_detailed_v2.0.0.svg
     :alt: lbr_ros2_control_detailed
 
-- The ``controller_manager::ControllerManager`` loads the correct plugin from the ``<ros2_control>`` tag in the ``robot_description``: `lbr_system_interface.xacro <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_ros2_control/config/lbr_system_interface.xacro>`_:octicon:`link-external`
-- FRI relevant parameters are forwarded to the ``lbr_ros2_control::SystemInterface`` plugin from `lbr_system_paramters.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_ros2_control/config/lbr_system_parameters.yaml>`_:octicon:`link-external`
+- The ``controller_manager::ControllerManager`` loads the correct plugin from the ``<ros2_control>`` tag in the ``robot_description``: `lbr_system_interface.xacro <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_description/ros2_control/lbr_system_interface.xacro>`_:octicon:`link-external`
+- FRI relevant parameters are forwarded to the ``lbr_ros2_control::SystemInterface`` plugin from `lbr_system_config.yaml <https://github.com/lbr-stack/lbr_fri_ros2_stack/blob/humble/lbr_description/ros2_control/lbr_system_config.yaml>`_:octicon:`link-external`
 
 The ``lbr_ros2_control::SystemInterface`` is spun with the ``controller_manager`` node at a rate set by the ``update_rate`` parameter. The communication to the robot is run **asynchronously** at a rate set by the robot's sample time.
 

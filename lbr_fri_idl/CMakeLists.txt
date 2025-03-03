@@ -20,13 +20,14 @@ find_package(builtin_interfaces REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(lbr_fri_idl
+  msg/LBRAnalogCommand.msg
+  msg/LBRBooleanCommand.msg
+  msg/LBRDigitalCommand.msg
   msg/LBRCommand.msg
   msg/LBRJointPositionCommand.msg
   msg/LBRState.msg
   msg/LBRTorqueCommand.msg
   msg/LBRWrenchCommand.msg
-  msg/LBRAnalogCommand.msg
-  msg/LBRDigitalCommand.msg
   DEPENDENCIES builtin_interfaces
   ADD_LINTER_TESTS
 )

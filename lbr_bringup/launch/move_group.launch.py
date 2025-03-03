@@ -5,7 +5,7 @@ from launch.actions import OpaqueFunction
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from lbr_bringup.description import LBRDescriptionMixin
-from lbr_bringup.move_group import LBRMoveGroupMixin
+from lbr_bringup.moveit import LBRMoveGroupMixin
 from lbr_bringup.rviz import RVizMixin
 
 
@@ -46,8 +46,8 @@ def hidden_setup(context: LaunchContext) -> List[LaunchDescriptionEntity]:
 
     # RViz if desired
     rviz = RVizMixin.node_rviz(
-        rviz_config_pkg=f"{model}_moveit_config",
-        rviz_config="config/moveit.rviz",
+        rviz_cfg_pkg=f"{model}_moveit_config",
+        rviz_cfg="config/moveit.rviz",
         parameters=LBRMoveGroupMixin.params_rviz(
             moveit_configs=moveit_configs_builder.to_moveit_configs()
         )
@@ -74,6 +74,10 @@ def hidden_setup(context: LaunchContext) -> List[LaunchDescriptionEntity]:
             (
                 "robot_description_semantic",
                 PathJoinSubstitution([robot_name, "robot_description_semantic"]),
+            ),
+            (
+                "recognized_object_array",
+                PathJoinSubstitution([robot_name, "recognized_object_array"]),
             ),
         ],
         condition=IfCondition(LaunchConfiguration("rviz")),

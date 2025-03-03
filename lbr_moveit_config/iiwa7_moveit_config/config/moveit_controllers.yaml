@@ -8,13 +8,13 @@ moveit_simple_controller_manager:
 
   joint_trajectory_controller:
     type: FollowJointTrajectory
+    joints:
+      - lbr_A1
+      - lbr_A2
+      - lbr_A3
+      - lbr_A4
+      - lbr_A5
+      - lbr_A6
+      - lbr_A7
     action_ns: follow_joint_trajectory
     default: true
-    joints:
-      - A1
-      - A2
-      - A3
-      - A4
-      - A5
-      - A6
-      - A7

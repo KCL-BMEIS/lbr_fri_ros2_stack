@@ -8,8 +8,8 @@ class AdmittanceController(object):
     def __init__(
         self,
         robot_description: str,
-        base_link: str = "link_0",
-        end_effector_link: str = "link_ee",
+        base_link: str = "lbr_link_0",
+        end_effector_link: str = "lbr_link_ee",
         f_ext_th: np.ndarray = np.array([2.0, 2.0, 2.0, 0.5, 0.5, 0.5]),
         dq_gains: np.ndarray = np.array([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
         dx_gains: np.ndarray = np.array([0.1, 0.1, 0.1, 0.1, 0.1, 0.1]),

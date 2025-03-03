@@ -9,22 +9,22 @@
     <xacro:arg name="robot_name" default="lbr" />
     <xacro:arg name="mode" default="true" />
     <xacro:arg
-        name="system_parameters_path"
-        default="$(find lbr_ros2_control)/config/lbr_system_parameters.yaml" />
+        name="system_config_path"
+        default="$(find lbr_description)/ros2_control/lbr_system_config.yaml" />
 
-    <!-- fixed to world, see http://classic.gazebosim.org/tutorials?tut=ros_urdf&cat=connect_ros -->
-    <link name="world" />
+    <!-- KDL requires a link without inertia -->
+    <link name="$(arg robot_name)_floating_link" />
 
     <!--joint
-        between world and link_0-->
-    <joint name="world_joint" type="fixed">
-        <parent link="world" />
-        <child link="link_0" />
+        between <robot_name>_floating_link and robot_name_link_0-->
+    <joint name="$(arg robot_name)_floating_joint" type="fixed">
+        <parent link="$(arg robot_name)_floating_link" />
+        <child link="$(arg robot_name)_link_0" />
     </joint>
 
     <!-- med -->
     <xacro:med7
         robot_name="$(arg robot_name)"
         mode="$(arg mode)"
-        system_parameters_path="$(arg system_parameters_path)" />
+        system_config_path="$(arg system_config_path)" />
 </robot>

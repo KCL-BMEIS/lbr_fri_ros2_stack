@@ -1,0 +1,178 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="lbr_system_interface"
+      params="robot_name mode joint_limits system_config_path">
+    <!-- 通过 YAML 文件加载系统参数 -->
+    <xacro:property name="system_config"
+        value="${xacro.load_yaml(system_config_path)}" />
+
+    <ros2_control name="${robot_name}_system_interface" type="system">
+      <!-- 根据模式加载插件 -->
+      <xacro:if value="${mode == 'mock'}">
+        <hardware>
+          <plugin>mock_components/GenericSystem</plugin>
+        </hardware>
+      </xacro:if>
+      <xacro:if value="${mode == 'gazebo'}">
+        <hardware>
+          <plugin>ign_ros2_control/IgnitionSystem</plugin>
+        </hardware>
+      </xacro:if>
+      <xacro:if value="${mode == 'hardware'}">
+        <hardware>
+          <plugin>lbr_ros2_control::SystemInterface</plugin>
+          <param name="fri_client_sdk_major_version">${system_config['hardware']['fri_client_sdk']['major_version']}</param>
+          <param name="fri_client_sdk_minor_version">${system_config['hardware']['fri_client_sdk']['minor_version']}</param>
+          <param name="client_command_mode">${system_config['hardware']['client_command_mode']}</param>
+          <param name="port_id">${system_config['hardware']['port_id']}</param>
+          <param name="remote_host">${system_config['hardware']['remote_host']}</param>
+          <param name="rt_prio">${system_config['hardware']['rt_prio']}</param>
+          <param name="joint_position_tau">${system_config['hardware']['joint_position_tau']}</param>
+          <param name="command_guard_variant">${system_config['hardware']['command_guard_variant']}</param>
+          <param name="external_torque_tau">${system_config['hardware']['external_torque_tau']}</param>
+          <param name="measured_torque_tau">${system_config['hardware']['measured_torque_tau']}</param>
+          <param name="open_loop">${system_config['hardware']['open_loop']}</param>
+        </hardware>
+      </xacro:if>
+
+      <!-- 定义 LBR 特有的状态接口作为传感器 -->
+      <xacro:if value="${mode == 'hardware'}">
+        <sensor name="auxiliary_sensor">
+          <!-- 参考 KUKA::FRI::LBRState -->
+          <state_interface name="sample_time" />
+          <state_interface name="session_state" />
+          <state_interface name="connection_quality" />
+          <state_interface name="safety_state" />
+          <state_interface name="operation_mode" />
+          <state_interface name="drive_state" />
+          <state_interface name="client_command_mode" />
+          <state_interface name="overlay_type" />
+          <state_interface name="control_mode" />
+          <state_interface name="time_stamp_sec" />
+          <state_interface name="time_stamp_nano_sec" />
+          <state_interface name="tracking_performance" />
+        </sensor>
+
+        <sensor name="estimated_ft_sensor">
+          <param name="enabled">${system_config['estimated_ft_sensor']['enabled']}</param>
+          <param name="update_rate">${system_config['estimated_ft_sensor']['update_rate']}</param>
+          <param name="rt_prio">${system_config['estimated_ft_sensor']['rt_prio']}</param>
+          <param name="chain_root">${system_config['estimated_ft_sensor']['chain_root']}</param>
+          <param name="chain_tip">${system_config['estimated_ft_sensor']['chain_tip']}</param>
+          <param name="damping">${system_config['estimated_ft_sensor']['damping']}</param>
+          <param name="force_x_th">${system_config['estimated_ft_sensor']['force_x_th']}</param>
+          <param name="force_y_th">${system_config['estimated_ft_sensor']['force_y_th']}</param>
+          <param name="force_z_th">${system_config['estimated_ft_sensor']['force_z_th']}</param>
+          <param name="torque_x_th">${system_config['estimated_ft_sensor']['torque_x_th']}</param>
+          <param name="torque_y_th">${system_config['estimated_ft_sensor']['torque_y_th']}</param>
+          <param name="torque_z_th">${system_config['estimated_ft_sensor']['torque_z_th']}</param>
+          <xacro:if value="${system_config['estimated_ft_sensor']['enabled']}">
+            <state_interface name="force.x" />
+            <state_interface name="force.y" />
+            <state_interface name="force.z" />
+            <state_interface name="torque.x" />
+            <state_interface name="torque.y" />
+            <state_interface name="torque.z" />
+          </xacro:if>
+        </sensor>
+
+        <!-- FRI 笛卡尔阻抗控制模式下的力矩命令接口 -->
+        <gpio name="wrench">
+          <command_interface name="force.x" />
+          <command_interface name="force.y" />
+          <command_interface name="force.z" />
+          <command_interface name="torque.x" />
+          <command_interface name="torque.y" />
+          <command_interface name="torque.z" />
+        </gpio>
+
+        <!-- 添加 IO command 接口，用于 IOCommandController -->
+        <gpio name="io_command">
+          <!-- 注意：这些接口名称需要与 IOCommandController 中参数 (analog_io_names、boolean_io_names、digital_io_names) 保持一致 -->
+          <command_interface name="Speed" />
+          <command_interface name="analog_io_2" />
+          <command_interface name="Start" />
+          <command_interface name="boolean_io_2" />
+          <command_interface name="digital_io_1" />
+          <command_interface name="digital_io_2" />
+        </gpio>
+      </xacro:if>
+
+      <!-- 定义各关节的命令/状态接口 -->
+      <xacro:macro name="joint_interface"
+          params="name min_position max_position max_velocity max_torque mode">
+        <joint name="${name}">
+          <command_interface name="position">
+            <param name="min">${min_position}</param>
+            <param name="max">${max_position}</param>
+          </command_interface>
+          <!-- 除了 Gazebo 模式外，添加 effort 命令接口 -->
+          <xacro:unless value="${mode == 'gazebo'}">
+            <command_interface name="effort">
+              <param name="min">-${max_torque}</param>
+              <param name="max">${max_torque}</param>
+            </command_interface>
+          </xacro:unless>
+          <state_interface name="position" />
+          <state_interface name="velocity" />
+          <state_interface name="effort" />
+          <xacro:if value="${mode == 'hardware'}">
+            <param name="min_position">${min_position}</param>
+            <param name="max_position">${max_position}</param>
+            <param name="max_velocity">${max_velocity}</param>
+            <param name="max_torque">${max_torque}</param>
+            <xacro:if value="${system_config['hardware']['fri_client_sdk']['major_version'] == 1}">
+              <state_interface name="commanded_joint_position" />
+            </xacro:if>
+            <state_interface name="commanded_torque" />
+            <state_interface name="external_torque" />
+            <state_interface name="ipo_joint_position" />
+          </xacro:if>
+        </joint>
+      </xacro:macro>
+
+      <xacro:joint_interface name="${robot_name}_A1"
+          min_position="${joint_limits['A1']['lower'] * PI / 180}"
+          max_position="${joint_limits['A1']['upper'] * PI / 180}"
+          max_velocity="${joint_limits['A1']['velocity'] * PI / 180}"
+          max_torque="${joint_limits['A1']['effort']}"
+          mode="${mode}" />
+      <xacro:joint_interface name="${robot_name}_A2"
+          min_position="${joint_limits['A2']['lower'] * PI / 180}"
+          max_position="${joint_limits['A2']['upper'] * PI / 180}"
+          max_velocity="${joint_limits['A2']['velocity'] * PI / 180}"
+          max_torque="${joint_limits['A2']['effort']}"
+          mode="${mode}" />
+      <xacro:joint_interface name="${robot_name}_A3"
+          min_position="${joint_limits['A3']['lower'] * PI / 180}"
+          max_position="${joint_limits['A3']['upper'] * PI / 180}"
+          max_velocity="${joint_limits['A3']['velocity'] * PI / 180}"
+          max_torque="${joint_limits['A3']['effort']}"
+          mode="${mode}" />
+      <xacro:joint_interface name="${robot_name}_A4"
+          min_position="${joint_limits['A4']['lower'] * PI / 180}"
+          max_position="${joint_limits['A4']['upper'] * PI / 180}"
+          max_velocity="${joint_limits['A4']['velocity'] * PI / 180}"
+          max_torque="${joint_limits['A4']['effort']}"
+          mode="${mode}" />
+      <xacro:joint_interface name="${robot_name}_A5"
+          min_position="${joint_limits['A5']['lower'] * PI / 180}"
+          max_position="${joint_limits['A5']['upper'] * PI / 180}"
+          max_velocity="${joint_limits['A5']['velocity'] * PI / 180}"
+          max_torque="${joint_limits['A5']['effort']}"
+          mode="${mode}" />
+      <xacro:joint_interface name="${robot_name}_A6"
+          min_position="${joint_limits['A6']['lower'] * PI / 180}"
+          max_position="${joint_limits['A6']['upper'] * PI / 180}"
+          max_velocity="${joint_limits['A6']['velocity'] * PI / 180}"
+          max_torque="${joint_limits['A6']['effort']}"
+          mode="${mode}" />
+      <xacro:joint_interface name="${robot_name}_A7"
+          min_position="${joint_limits['A7']['lower'] * PI / 180}"
+          max_position="${joint_limits['A7']['upper'] * PI / 180}"
+          max_velocity="${joint_limits['A7']['velocity'] * PI / 180}"
+          max_torque="${joint_limits['A7']['effort']}"
+          mode="${mode}" />
+    </ros2_control>
+  </xacro:macro>
+</robot>

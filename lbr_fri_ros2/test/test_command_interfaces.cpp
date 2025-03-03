@@ -18,7 +18,6 @@
 class TestCommandInterfaces : public ::testing::Test {
 public:
   TestCommandInterfaces() : random_engine_(std::random_device{}()) {
-    pid_params_ = lbr_fri_ros2::PIDParameters();
     cmd_guard_params_ = lbr_fri_ros2::CommandGuardParameters();
     state_interface_params_ = lbr_fri_ros2::StateInterfaceParameters();
 
@@ -40,17 +39,17 @@ public:
     case KUKA::FRI::EClientCommandMode::JOINT_POSITION:
 #endif
     {
-      command_interface_ =
-          std::make_shared<lbr_fri_ros2::PositionCommandInterface>(pid_params_, cmd_guard_params_);
+      command_interface_ = std::make_shared<lbr_fri_ros2::PositionCommandInterface>(
+          joint_position_tau_, cmd_guard_params_);
       break;
     }
     case KUKA::FRI::EClientCommandMode::TORQUE:
-      command_interface_ =
-          std::make_shared<lbr_fri_ros2::TorqueCommandInterface>(pid_params_, cmd_guard_params_);
+      command_interface_ = std::make_shared<lbr_fri_ros2::TorqueCommandInterface>(
+          joint_position_tau_, cmd_guard_params_);
       break;
     case KUKA::FRI::EClientCommandMode::WRENCH:
-      command_interface_ =
-          std::make_shared<lbr_fri_ros2::WrenchCommandInterface>(pid_params_, cmd_guard_params_);
+      command_interface_ = std::make_shared<lbr_fri_ros2::WrenchCommandInterface>(
+          joint_position_tau_, cmd_guard_params_);
       break;
     default:
       throw std::runtime_error("Unsupported client command mode.");
@@ -129,7 +128,7 @@ protected:
   std::default_random_engine random_engine_;
   std::uniform_real_distribution<double> uniform_real_dist_{-1.0, 1.0};
 
-  lbr_fri_ros2::PIDParameters pid_params_;
+  double joint_position_tau_{0.04};
   lbr_fri_ros2::CommandGuardParameters cmd_guard_params_;
   lbr_fri_ros2::StateInterfaceParameters state_interface_params_;
 

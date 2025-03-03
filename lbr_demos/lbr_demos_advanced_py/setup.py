@@ -6,7 +6,7 @@ package_name = "lbr_demos_advanced_py"
 
 setup(
     name=package_name,
-    version="2.1.0",
+    version="2.2.0",
     packages=[package_name],
     data_files=[
         ("share/ament_index/resource_index/packages", ["resource/" + package_name]),
@@ -18,7 +18,7 @@ setup(
     maintainer="mhubii",
     maintainer_email="m.huber_1994@hotmail.de",
     description="Advanced Python demos for the lbr_ros2_control.",
-    license="MIT",
+    license="Apache-2.0",
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [

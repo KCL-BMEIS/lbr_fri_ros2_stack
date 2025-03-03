@@ -114,8 +114,8 @@ This launch file will spin up ``RViz`` for visualization. It will (see `rviz.lau
 .. code:: bash
 
     ros2 launch lbr_bringup rviz.launch.py \
-            rviz_config_pkg:=lbr_bringup \
-            rviz_config:=config/mock.rviz # [gazebo.rviz, hardware.rviz, mock.rviz]
+            rviz_cfg_pkg:=lbr_bringup \
+            rviz_cfg:=config/mock.rviz # [gazebo.rviz, hardware.rviz, mock.rviz]
 
 .. note::
     List all arguments for the launch file via ``ros2 launch lbr_bringup rviz.launch.py -s``.
@@ -156,8 +156,8 @@ The below shows an example of the `rviz.launch.py <https://github.com/lbr-stack/
         ld = LaunchDescription()
 
         # launch arguments
-        ld.add_action(RVizMixin.arg_rviz_config())
-        ld.add_action(RVizMixin.arg_rviz_config_pkg())
+        ld.add_action(RVizMixin.arg_rviz_cfg())
+        ld.add_action(RVizMixin.arg_rviz_cfg_pkg())
 
         # rviz
         ld.add_action(RVizMixin.node_rviz())

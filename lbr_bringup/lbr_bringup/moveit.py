@@ -1,16 +1,16 @@
 import os
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional, Union
 
 from ament_index_python import get_package_share_directory
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+from launch.actions import DeclareLaunchArgument, ExecuteProcess
+from launch.substitutions import (
+    FindExecutable,
+    LaunchConfiguration,
+    PathJoinSubstitution,
+)
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 from moveit_configs_utils import MoveItConfigs, MoveItConfigsBuilder
-
-# NOTE TO SELF:
-# due to individual moveit configs, put mixins into lbr_bringup rather than lbr_moveit_config
-# most of the configs are taken from Python package moveit_configs_utils.launches
 
 
 class LBRMoveGroupMixin:
@@ -67,7 +67,10 @@ class LBRMoveGroupMixin:
                     f"urdf/{robot_name}/{robot_name}.xacro",
                 ),
             )
-            .planning_pipelines(default_planning_pipeline="ompl")
+            .planning_pipelines(
+                default_planning_pipeline="ompl",
+                pipelines=["ompl"],
+            )
         )
 
     @staticmethod
@@ -116,5 +119,48 @@ class LBRMoveGroupMixin:
             package="moveit_ros_move_group",
             executable="move_group",
             output="screen",
+            **kwargs,
+        )
+
+
+class LBRMoveItServoMixin:
+    @staticmethod
+    def arg_default_enable_servo() -> DeclareLaunchArgument:
+        return DeclareLaunchArgument(
+            name="default_enable_servo",
+            default_value="true",
+            description="Whether to enable the servo node by default.",
+        )
+
+    @staticmethod
+    def node_moveit_servo(
+        robot_name: Optional[Union[LaunchConfiguration, str]] = LaunchConfiguration(
+            "robot_name", default="lbr"
+        ),
+        **kwargs,
+    ) -> Node:
+        return Node(
+            package="moveit_servo",
+            executable="servo_node_main",
+            output="screen",
+            namespace=robot_name,
+            **kwargs,
+        )
+
+    @staticmethod
+    def call_start_servo_service(
+        robot_name: Optional[Union[LaunchConfiguration, str]] = LaunchConfiguration(
+            "robot_name", default="lbr"
+        ),
+        **kwargs,
+    ) -> ExecuteProcess:
+        return ExecuteProcess(
+            cmd=[
+                FindExecutable(name="ros2"),
+                "service",
+                "call",
+                PathJoinSubstitution([robot_name, "servo_node/start_servo"]),
+                "std_srvs/srv/Trigger",
+            ],
             **kwargs,
         )

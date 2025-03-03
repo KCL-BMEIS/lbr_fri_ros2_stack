@@ -32,8 +32,8 @@ public:
       return;
     }
 
-    this->declare_parameter<std::string>("base_link", "link_0");
-    this->declare_parameter<std::string>("end_effector_link", "link_ee");
+    this->declare_parameter<std::string>("base_link", "lbr_link_0");
+    this->declare_parameter<std::string>("end_effector_link", "lbr_link_ee");
 
     std::string root_link = this->get_parameter("base_link").as_string();
     std::string tip_link = this->get_parameter("end_effector_link").as_string();
@@ -54,7 +54,7 @@ protected:
     current_lbr_state_ = *lbr_state;
 
     double joint_position[KUKA::FRI::LBRState::NUMBER_OF_JOINTS];
-    for (int i = 0; i < KUKA::FRI::LBRState::NUMBER_OF_JOINTS; i++) {
+    for (int i = 0; i < KUKA::FRI::LBRState::NUMBER_OF_JOINTS; ++i) {
       joint_position[i] = current_lbr_state_.measured_joint_position[i];
     }
     current_pose_ = compute_fk_(joint_position);
@@ -65,7 +65,7 @@ protected:
     if (current_lbr_state_.session_state == KUKA::FRI::COMMANDING_ACTIVE) {
       KDL::JntArray current_joint_positions(KUKA::FRI::LBRState::NUMBER_OF_JOINTS);
 
-      for (unsigned int i = 0; i < KUKA::FRI::LBRState::NUMBER_OF_JOINTS; i++) {
+      for (unsigned int i = 0; i < KUKA::FRI::LBRState::NUMBER_OF_JOINTS; ++i) {
         current_joint_positions(i) = current_lbr_state_.measured_joint_position[i];
       }
 
@@ -79,7 +79,7 @@ protected:
     KDL::ChainFkSolverPos_recursive fk_solver = KDL::ChainFkSolverPos_recursive(chain_);
     KDL::JntArray joint_positions = KDL::JntArray(KUKA::FRI::LBRState::NUMBER_OF_JOINTS);
 
-    for (unsigned int i = 0; i < KUKA::FRI::LBRState::NUMBER_OF_JOINTS; i++) {
+    for (unsigned int i = 0; i < KUKA::FRI::LBRState::NUMBER_OF_JOINTS; ++i) {
       joint_positions(i) = position_array_ptr[i];
     }
 
@@ -131,7 +131,7 @@ protected:
     {
       RCLCPP_ERROR(this->get_logger(), "Inverse kinematics failed.");
     } else {
-      for (unsigned int i = 0; i < result_joint_positions.data.size(); i++) {
+      for (unsigned int i = 0; i < result_joint_positions.data.size(); ++i) {
         joint_position_command.joint_position[i] = result_joint_positions(i);
       }
     }

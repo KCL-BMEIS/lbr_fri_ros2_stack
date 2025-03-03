@@ -1,11 +1,10 @@
 <?xml version="1.0"?>
 <library path="lbr_ros2_control">
-    <!-- LBR state broadcaster plugin -->
-
-    <class name="lbr_ros2_control/LBRStateBroadcaster" 
-        type="lbr_ros2_control::LBRStateBroadcaster"
+    <!-- Admittance controller plugin -->
+    <class name="lbr_ros2_control/AdmittanceController"
+        type="lbr_ros2_control::AdmittanceController"
         base_class_type="controller_interface::ControllerInterface">
-        <description>Broadcaster for LBRState messages, see lbr_fri_idl/msg/LBRState.msg.</description>
+        <description>A simple admittance controller.</description>
     </class>
 
     <!-- LBR forward position command controller plugin -->
@@ -14,6 +13,12 @@
         base_class_type="controller_interface::ControllerInterface">
         <description>Forward command controller for LBRJointPositionCommand message, see
             lbr_fri_idl/msg/LBRJointPositionCommand.msg.</description>
+    </class>
+
+    <!-- LBR state broadcaster plugin -->
+    <class name="lbr_ros2_control/LBRStateBroadcaster" type="lbr_ros2_control::LBRStateBroadcaster"
+        base_class_type="controller_interface::ControllerInterface">
+        <description>Broadcaster for LBRState messages, see lbr_fri_idl/msg/LBRState.msg.</description>
     </class>
 
     <!-- LBR forward torque command controller plugin -->
@@ -32,26 +37,18 @@
             lbr_fri_idl/msg/LBRWrenchCommand.msg.</description>
     </class>
 
-    <!-- Admittance controller plugin -->
-    <class name="lbr_ros2_control/AdmittanceController"
-        type="lbr_ros2_control::AdmittanceController"
+    <!-- Twist controller plugin -->
+    <class name="lbr_ros2_control/TwistController"
+        type="lbr_ros2_control::TwistController"
         base_class_type="controller_interface::ControllerInterface">
-        <description>A simple admittance controller.</description>
+        <description>A simple twist controller.</description>
     </class>
+
+    <!-- IO command controller plugin -->
+    <class name="lbr_ros2_control/IOCommandController"
+        type="lbr_ros2_control::IOCommandController"
+        base_class_type="controller_interface::ControllerInterface">
+        <description>An IO controller.</description>
+    </class>
+
 </library>
-
-    <!-- LBR forward analog command controller plugin -->
-    <class name="lbr_ros2_control/LBRAnalogCommandController"
-        type="lbr_ros2_control::LBRAnalogCommandController"
-        base_class_type="controller_interface::ControllerInterface">
-        <description>Forward command controller for LBRAnalogCommand message, see
-            lbr_fri_idl/msg/LBRAnalogCommand.msg.</description>
-    </class>
-
-    <!-- LBR forward digital command controller plugin -->
-    <class name="lbr_ros2_control/LBRDigitalCommandController"
-        type="lbr_ros2_control::LBRDigitalCommandController"
-        base_class_type="controller_interface::ControllerInterface">
-        <description>Forward command controller for LBRDigitalCommand message, see
-            lbr_fri_idl/msg/LBRDigitalCommand.msg.</description>
-    </class>

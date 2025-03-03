@@ -12,8 +12,8 @@ class AdmittanceControlNode(LBRBasePositionCommandNode):
         super().__init__(node_name=node_name)
 
         # parameters
-        self.declare_parameter("base_link", "link_0")
-        self.declare_parameter("end_effector_link", "link_ee")
+        self.declare_parameter("base_link", "lbr_link_0")
+        self.declare_parameter("end_effector_link", "lbr_link_ee")
         self.declare_parameter("f_ext_th", [2.0, 2.0, 2.0, 0.5, 0.5, 0.5])
         self.declare_parameter("dq_gains", [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
         self.declare_parameter("dx_gains", [0.1, 0.1, 0.1, 0.1, 0.1, 0.1])

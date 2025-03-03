@@ -16,11 +16,13 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(controller_interface REQUIRED)
+find_package(eigen3_cmake_module REQUIRED)
+find_package(Eigen3)
 find_package(FRIClient REQUIRED)
 find_package(hardware_interface REQUIRED)
+find_package(kinematics_interface REQUIRED)
 find_package(lbr_fri_idl REQUIRED)
 find_package(lbr_fri_ros2 REQUIRED)
-find_package(kinematics_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(realtime_tools REQUIRED)
@@ -29,12 +31,13 @@ find_package(realtime_tools REQUIRED)
 add_library(
   ${PROJECT_NAME}
   SHARED
+  src/controllers/admittance_controller.cpp
   src/controllers/lbr_joint_position_command_controller.cpp
   src/controllers/lbr_torque_command_controller.cpp
   src/controllers/lbr_wrench_command_controller.cpp
   src/controllers/lbr_state_broadcaster.cpp
-  src/controllers/lbr_analog_command_controller.cpp 
-  src/controllers/lbr_digital_command_controller.cpp
+  src/controllers/twist_controller.cpp
+  src/controllers/io_command_controller.cpp
   src/system_interface.cpp
 )
 
@@ -49,15 +52,20 @@ target_include_directories(
 )
 
 # Link against dependencies
-ament_target_dependencies(
-  ${PROJECT_NAME}
+set(AMENT_DEPENDENCIES
   controller_interface
+  Eigen3
   hardware_interface
+  kinematics_interface
   lbr_fri_idl
   lbr_fri_ros2
   pluginlib
   rclcpp
   realtime_tools
+)
+ament_target_dependencies(
+  ${PROJECT_NAME}
+  ${AMENT_DEPENDENCIES}
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -73,16 +81,11 @@ ament_export_targets(
 )
 
 ament_export_dependencies(
-  controller_interface
   FRIClient
-  hardware_interface
-  lbr_fri_idl
-  lbr_fri_ros2
-  pluginlib
-  rclcpp
-  realtime_tools
+  ${AMENT_DEPENDENCIES}
+  eigen3_cmake_module
 )
-  
+
 install(
   DIRECTORY include/
   DESTINATION include
@@ -94,11 +97,6 @@ install(
     LIBRARY DESTINATION lib/${PROJECT_NAME}
     RUNTIME DESTINATION lib/${PROJECT_NAME}
     INCLUDES DESTINATION include
-)
-
-install(
-  DIRECTORY config
-  DESTINATION share/${PROJECT_NAME}
 )
 
 ament_package()

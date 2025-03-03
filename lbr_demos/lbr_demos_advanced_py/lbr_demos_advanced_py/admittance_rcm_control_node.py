@@ -12,8 +12,8 @@ class LBRAdmittanceControlRCMNode(LBRBasePositionCommandNode):
         super().__init__(node_name)
 
         # declare and get parameters
-        self.declare_parameter("base_link", "link_0")
-        self.declare_parameter("end_effector_link", "link_ee")
+        self.declare_parameter("base_link", "lbr_link_0")
+        self.declare_parameter("end_effector_link", "lbr_link_ee")
         self.declare_parameter("f_ext_th", [4.0, 4.0, 4.0, 1.0, 1.0, 1.0])
         self.declare_parameter("dq_gains", [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
         self.declare_parameter("dx_gains", [0.1, 0.1, 0.1, 0.1, 0.1, 0.1])
