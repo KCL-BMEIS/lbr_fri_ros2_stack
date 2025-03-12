@@ -1,0 +1,13 @@
+repositories:
+  fri:
+    type: git
+    url: https://github.com/lbr-stack/fri
+    version: fri-2.5 # please refer to https://github.com/lbr-stack/fri/issues/33. KUKA released Sunrise 2.6 but kept FRI 2.5
+  lbr_fri_idl:
+    type: git
+    url: https://github.com/lbr-stack/lbr_fri_idl
+    version: fri-2
+  lbr_fri_ros2_stack:
+    type: git
+    url: https://github.com/lbr-stack/lbr_fri_ros2_stack
+    version: rolling
