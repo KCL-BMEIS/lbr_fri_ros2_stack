@@ -1,0 +1,33 @@
+# these parameters are read by the lbr_system_interface.xacro and configure the lbr_ros2_control::SystemInterface
+hardware:
+  fri_client_sdk: # the fri_client_sdk version is used to create the correct state interfaces lbr_system_interface.xacro
+    major_version: 1
+    minor_version: 15
+  client_command_mode: position # the command mode specifies the user-sent commands. Available: [position, torque, wrench]
+  port_id: 30200 # port id for the UDP communication. Useful in multi-robot setups
+  remote_host: INADDR_ANY # the expected robot IP address. INADDR_ANY will accept any incoming connection
+  rt_prio: 80 # real-time priority for the control loop
+  pid_p: 0.1 # P gain for the joint position  (useful for asynchronous control)
+  pid_i: 0.0 # I gain for the joint position command
+  pid_d: 0.0 # D gain for the joint position command
+  pid_i_max: 0.0 # max integral value for the joint position command
+  pid_i_min: 0.0 # min integral value for the joint position command
+  pid_antiwindup: false # enable antiwindup for the joint position command
+  command_guard_variant: default # if requested position / velocities beyond limits, CommandGuard will be triggered and shut the connection. Available: [default, safe_stop]
+  external_torque_cutoff_frequency: 10 # low-pass filter for the external joint torque measurements [Hz]
+  measured_torque_cutoff_frequency: 10 # low-pass filter for the joint torque measurements [Hz]
+  open_loop: true # KUKA works the best in open_loop control mode
+
+estimated_ft_sensor: # estimates the external force-torque from the external joint torque values
+  enabled: true # whether to enable the force-torque estimation
+  update_rate: 100 # update rate for the force-torque estimation [Hz] (less or equal to controller manager update rate)
+  rt_prio: 30 # real-time priority for the force-torque estimation
+  chain_root: lbr_one_link_0
+  chain_tip: lbr_one_link_ee
+  damping: 0.2 # damping factor for the pseudo-inverse of the Jacobian
+  force_x_th: 2.0 # x-force threshold. Only if the force exceeds this value, the force will be considered
+  force_y_th: 2.0 # y-force threshold. Only if the force exceeds this value, the force will be considered
+  force_z_th: 2.0 # z-force threshold. Only if the force exceeds this value, the force will be considered
+  torque_x_th: 0.5 # x-torque threshold. Only if the torque exceeds this value, the torque will be considered
+  torque_y_th: 0.5 # y-torque threshold. Only if the torque exceeds this value, the torque will be considered
+  torque_z_th: 0.5 # z-torque threshold. Only if the torque exceeds this value, the torque will be considered
