@@ -17,9 +17,6 @@
 #include "lbr_fri_ros2/interfaces/state.hpp"
 #include "lbr_fri_ros2/interfaces/torque_command.hpp"
 #include "lbr_fri_ros2/interfaces/wrench_command.hpp"
-#include "lbr_fri_ros2/interfaces/analog_command.hpp"
-#include "lbr_fri_ros2/interfaces/boolean_command.hpp"
-#include "lbr_fri_ros2/interfaces/digital_command.hpp"
 
 namespace lbr_fri_ros2 {
 class AsyncClient : public KUKA::FRI::LBRClient {

@@ -38,5 +38,11 @@ constexpr char HW_IF_TORQUE_Z[] = "torque.z";
 constexpr char HW_IF_WRENCH_PREFIX[] = "wrench";
 constexpr char HW_IF_AUXILIARY_PREFIX[] = "auxiliary_sensor";
 constexpr char HW_IF_ESTIMATED_FT_PREFIX[] = "estimated_ft_sensor";
+
+// 新增的GPIO相关接口定义：
+constexpr char HW_IF_GPIO_PREFIX[] = "gpio";         // GPIO接口的前缀
+constexpr char HW_IF_ANALOG_SPEED[] = "analog_speed";  // 对应模拟量的速度接口
+constexpr char HW_IF_BOOLEAN_START[] = "boolean_start";// 对应布尔量的启动接口
+constexpr char HW_IF_ANALOG[] = "analog";              // 通用的模拟量接口
 } // namespace lbr_ros2_control
 #endif // LBR_ROS2_CONTROL__SYSTEM_INTERFACE_TYPE_VALUES_HPP_

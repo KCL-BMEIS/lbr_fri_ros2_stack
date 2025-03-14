@@ -31,6 +31,10 @@ void StateInterface::set_state(const_fri_state_t_ref state) {
   state_.time_stamp_sec = state.getTimestampSec();
   state_.tracking_performance = state.getTrackingPerformance();
 
+    // 新增：获取主轴IO值
+  state_.spindle_speed = state.getAnalogIOValue("Spindle.Speed");
+  state_.spindle_start = state.getBooleanIOValue("Spindle.Start");
+
   if (!external_torque_filter_.is_initialized() || !measured_torque_filter_.is_initialized()) {
     // initialize state_.sample_time is available
     init_filters_();
@@ -70,6 +74,10 @@ void StateInterface::set_state_open_loop(const_fri_state_t_ref state,
   state_.time_stamp_nano_sec = state.getTimestampNanoSec();
   state_.time_stamp_sec = state.getTimestampSec();
   state_.tracking_performance = state.getTrackingPerformance();
+
+  // 新增：获取主轴IO值
+  state_.spindle_speed = state.getAnalogIOValue("Spindle.Speed");
+  state_.spindle_start = state.getBooleanIOValue("Spindle.Start");
 
   if (!external_torque_filter_.is_initialized() || !measured_torque_filter_.is_initialized()) {
     // initialize state_.sample_time is available

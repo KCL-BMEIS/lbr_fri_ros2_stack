@@ -44,11 +44,10 @@
         <description>A simple twist controller.</description>
     </class>
 
-    <!-- IO command controller plugin -->
-    <class name="lbr_ros2_control/IOCommandController"
-        type="lbr_ros2_control::IOCommandController"
+    <!-- GPIO controller plugin -->
+    <class name="lbr_ros2_control/GPIOController"
+        type="lbr_ros2_control::GPIOController"
         base_class_type="controller_interface::ControllerInterface">
-        <description>An IO controller.</description>
+        <description>A simple gpio controller.</description>
     </class>
-
 </library>

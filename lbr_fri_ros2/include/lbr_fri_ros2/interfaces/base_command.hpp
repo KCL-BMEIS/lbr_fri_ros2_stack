@@ -1,5 +1,5 @@
-#ifndef LBR_FRI_ROS2__INTERFACES__COMMAND_HPP_
-#define LBR_FRI_ROS2__INTERFACES__COMMAND_HPP_
+#ifndef LBR_FRI_ROS2__INTERACES__COMMAND_HPP_
+#define LBR_FRI_ROS2__INTERACES__COMMAND_HPP_
 
 #include <chrono>
 #include <memory>
@@ -44,4 +44,4 @@ protected:
   idl_command_t command_, command_target_;
 };
 } // namespace lbr_fri_ros2
-#endif // LBR_FRI_ROS2__INTERFACES__COMMAND_HPP_
+#endif // LBR_FRI_ROS2__INTERACES__COMMAND_HPP_

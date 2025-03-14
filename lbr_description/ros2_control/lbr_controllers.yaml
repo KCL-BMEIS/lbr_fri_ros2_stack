@@ -38,8 +38,8 @@
     twist_controller:
       type: lbr_ros2_control/TwistController
 
-    io_command_controller:
-      type: lbr_ros2_control/IOCommandController
+    gpio_controller:
+      type: lbr_ros2_control/GPIOController
 
 # ROS 2 control broadcasters
 /**/force_torque_broadcaster:
@@ -126,9 +126,6 @@
       cartesian_gains: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0] # cartesian gains
     timeout: 0.2 # stop controller if no command is received within this time [s]
 
-/**/io_command_controller:
+/**/gpio_controller:
   ros__parameters:
     robot_name: lbr
-    command_interfaces.analog_io_names.interfaces: ["Speed", "analog_io_2"]
-    command_interfaces.boolean_io_names.interfaces: ["Start", "boolean_io_2"]
-    command_interfaces.digital_io_names.interfaces: ["digital_io_1", "digital_io_2"]

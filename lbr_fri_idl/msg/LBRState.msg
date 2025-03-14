@@ -22,10 +22,6 @@
 #  * external_torque [Nm]
 #  * ipo_joint_position [rad]
 #  * tracking_performance [a.u.]
-#
-#  * BooleanIOValue[#]
-#  * DigitalIOValue[#]
-#  * AnalogIOValue[#]
 
 float64 sample_time
 int8 session_state
@@ -47,3 +43,6 @@ float64[7] commanded_torque
 float64[7] external_torque
 float64[7] ipo_joint_position
 float64 tracking_performance
+
+float64 spindle_speed
+float64 spindle_start

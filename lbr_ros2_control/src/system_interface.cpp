@@ -157,6 +157,10 @@ std::vector<hardware_interface::StateInterface> SystemInterface::export_state_in
   state_interfaces.emplace_back(auxiliary_sensor.name, HW_IF_TIME_STAMP_NANO_SEC,
                                 &hw_time_stamp_nano_sec_);
 
+  // 新增：导出主轴状态接口
+  state_interfaces.emplace_back(auxiliary_sensor.name, "Spindle.Speed", &hw_lbr_state_.spindle_speed);
+  state_interfaces.emplace_back(auxiliary_sensor.name, "Spindle.Start", &hw_lbr_state_.spindle_start);
+
   // additional force-torque state interface (if enabled)
   if (ft_parameters_.enabled) {
     const auto &estimated_ft_sensor = info_.sensors[1];
@@ -189,18 +193,11 @@ std::vector<hardware_interface::CommandInterface> SystemInterface::export_comman
   command_interfaces.emplace_back(wrench.name, HW_IF_TORQUE_X, &hw_lbr_command_.wrench[3]);
   command_interfaces.emplace_back(wrench.name, HW_IF_TORQUE_Y, &hw_lbr_command_.wrench[4]);
   command_interfaces.emplace_back(wrench.name, HW_IF_TORQUE_Z, &hw_lbr_command_.wrench[5]);
-  
-  // IO control command interfaces
-  if (info_.gpios.size() > 1) {
-    const auto &io_gpio = info_.gpios[1];
-    // 假定顺序为：analog_io_1, analog_io_2, boolean_io_1, boolean_io_2, digital_io_1, digital_io_2
-    command_interfaces.emplace_back(io_gpio.name, "Speed", &io_command_[0]);
-    command_interfaces.emplace_back(io_gpio.name, "analog_io_2", &io_command_[1]);
-    command_interfaces.emplace_back(io_gpio.name, "Start", &io_command_[2]);
-    command_interfaces.emplace_back(io_gpio.name, "boolean_io_2", &io_command_[3]);
-    command_interfaces.emplace_back(io_gpio.name, "digital_io_1", &io_command_[4]);
-    command_interfaces.emplace_back(io_gpio.name, "digital_io_2", &io_command_[5]);
-  }
+
+  const auto &gpio = info_.gpios[1];
+  command_interfaces.emplace_back(gpio.name, HW_IF_ANALOG_SPEED, &hw_lbr_command_.spindle_speed);
+  command_interfaces.emplace_back(gpio.name, HW_IF_BOOLEAN_START, &hw_lbr_command_.spindle_start);
+
   return command_interfaces;
 }
 
@@ -423,7 +420,10 @@ void SystemInterface::nan_command_interfaces_() {
   hw_lbr_command_.joint_position.fill(std::numeric_limits<double>::quiet_NaN());
   hw_lbr_command_.torque.fill(std::numeric_limits<double>::quiet_NaN());
   hw_lbr_command_.wrench.fill(std::numeric_limits<double>::quiet_NaN());
-  io_command_.fill(std::numeric_limits<double>::quiet_NaN()); // 新增：将 IO 命令置为 NaN
+
+  // 初始化主轴命令字段
+  hw_lbr_command_.spindle_speed = std::numeric_limits<double>::quiet_NaN();
+  hw_lbr_command_.spindle_start = 0;
 }
 
 void SystemInterface::nan_state_interfaces_() {
@@ -438,6 +438,10 @@ void SystemInterface::nan_state_interfaces_() {
   hw_lbr_state_.ipo_joint_position.fill(std::numeric_limits<double>::quiet_NaN());
   hw_lbr_state_.sample_time = std::numeric_limits<double>::quiet_NaN();
   hw_lbr_state_.tracking_performance = std::numeric_limits<double>::quiet_NaN();
+
+  // 新增：初始化主轴状态字段
+  hw_lbr_state_.spindle_speed = std::numeric_limits<double>::quiet_NaN();
+  hw_lbr_state_.spindle_start = 0;
 
   // state interfaces that require cast
   hw_session_state_ = std::numeric_limits<double>::quiet_NaN();
@@ -586,7 +590,8 @@ bool SystemInterface::verify_auxiliary_sensor_() {
         si.name != HW_IF_CONTROL_MODE && si.name != HW_IF_TIME_STAMP_SEC &&
         si.name != HW_IF_TIME_STAMP_NANO_SEC && si.name != HW_IF_COMMANDED_JOINT_POSITION &&
         si.name != HW_IF_COMMANDED_TORQUE && si.name != HW_IF_EXTERNAL_TORQUE &&
-        si.name != HW_IF_IPO_JOINT_POSITION && si.name != HW_IF_TRACKING_PERFORMANCE) {
+        si.name != HW_IF_IPO_JOINT_POSITION && si.name != HW_IF_TRACKING_PERFORMANCE &&
+        si.name != "Spindle.Speed" && si.name != "Spindle.Start") {
       RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
                           lbr_fri_ros2::ColorScheme::ERROR
                               << "Sensor '" << auxiliary_sensor.name.c_str()
@@ -659,20 +664,21 @@ bool SystemInterface::verify_gpios_() {
                             << lbr_fri_ros2::ColorScheme::ENDC);
     return false;
   }
-   // 验证 io_command 的名称和接口数量
-   if (info_.gpios[1].name != "io_command") {
+
+  if (info_.gpios[1].name != HW_IF_GPIO_PREFIX){
     RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
                         lbr_fri_ros2::ColorScheme::ERROR << "GPIO '" << info_.gpios[1].name.c_str()
-                                                         << "' received invalid name. Expected 'io_command'"
+                                                         << "' received invalid name. Expected '"
+                                                         << HW_IF_GPIO_PREFIX << "'"
                                                          << lbr_fri_ros2::ColorScheme::ENDC);
-    return false;
+  return false;
   }
-  if (info_.gpios[1].command_interfaces.size() != 6) {
+  if (info_.gpios[1].command_interfaces.size() != 2) {
     RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME),
                         lbr_fri_ros2::ColorScheme::ERROR
                             << "GPIO '" << info_.gpios[1].name.c_str()
                             << "' received invalid number of command interfaces. Received '"
-                            << info_.gpios[1].command_interfaces.size() << "', expected '6'"
+                            << info_.gpios[1].command_interfaces.size() << "', expected '2'"
                             << lbr_fri_ros2::ColorScheme::ENDC);
     return false;
   }

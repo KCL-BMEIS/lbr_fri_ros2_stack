@@ -1,63 +1,61 @@
+#include <rclcpp/rclcpp.hpp>
+#include <lbr_fri_idl/msg/spindle_control.hpp>  // 这是你的 SpindleControl 消息类型
 #include <chrono>
-#include <memory>
-#include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/int32.hpp"
-#include "std_msgs/msg/bool.hpp"
+#include <functional>
 
-using namespace std::chrono_literals;
-
-class IoCommandControllerNode : public rclcpp::Node
+class GpioCommandPublisher : public rclcpp::Node
 {
 public:
-  IoCommandControllerNode()
-  : Node("io_command_controller_node")
+  GpioCommandPublisher() : Node("gpio_command_publisher")
   {
-    // 订阅 /lbr/io_command_controller/transition_event 话题（这里以 Bool 消息为例）
-    transition_event_sub_ = this->create_subscription<std_msgs::msg::Bool>(
-      "/lbr/io_command_controller/transition_event",
-      10,
-      std::bind(&IoCommandControllerNode::transition_event_callback, this, std::placeholders::_1));
+    // 创建 Publisher，发布到 "/lbr/command/spindle" 主题
+    spindle_command_publisher_ = this->create_publisher<lbr_fri_idl::msg::SpindleControl>("/lbr/command/spindle", 10);
 
-    // 创建向Speed和Start发送消息的发布者
-    speed_pub_ = this->create_publisher<std_msgs::msg::Int32>("/lbr/analog_command_topic/Speed", 10);
-    start_pub_ = this->create_publisher<std_msgs::msg::Bool>("/lbr/boolean_command_topic/Start", 10);
-
-    // 定时器，每10ms调用一次publish_commands()函数
-    timer_ = this->create_wall_timer(10ms, std::bind(&IoCommandControllerNode::publish_commands, this));
+    // 使用定时器定期发布命令（例如每隔 10 毫秒）
+    timer_ = this->create_wall_timer(
+      std::chrono::milliseconds(10), std::bind(&GpioCommandPublisher::publish_spindle_command, this));
   }
 
 private:
-  // 订阅回调函数，打印接收到的transition_event消息
-  void transition_event_callback(const std_msgs::msg::Bool::SharedPtr msg)
+  void publish_spindle_command()
   {
-    RCLCPP_INFO(this->get_logger(), "Received transition event: %s", msg->data ? "true" : "false");
+    // 根据原始逻辑计算参数
+    float speed         = 2000.0f;
+    float feedr         = 0.01f;
+    float feed          = speed * feedr / 60.0f;
+    float unitIncrement = 20.0f / 65535.0f;
+    float voltage       = 1.5f * speed / 10000.0f;
+    float increment     = voltage / unitIncrement;
+
+    // 创建消息并填充数据
+    auto message = lbr_fri_idl::msg::SpindleControl();
+    
+    // 例如，将计算得到的 increment 用作主轴速度
+    message.spindle_speed = increment;
+    // 启动主轴
+    message.spindle_start = 1.0;
+
+    // 打印计算结果和消息数据
+    RCLCPP_INFO(this->get_logger(), "Publishing Spindle Speed: %.2f, Spindle Start: %s, Feed: %.2f, Increment: %.2f", 
+                message.spindle_speed, message.spindle_start ? "true" : "false", feed, increment);
+    
+    // 发布消息
+    spindle_command_publisher_->publish(message);
   }
 
-  // 定时器回调函数，每10ms发布Speed和Start消息
-  void publish_commands()
-  {
-    auto speed_msg = std_msgs::msg::Int32();
-    speed_msg.data = 1000;
-    speed_pub_->publish(speed_msg);
-
-    auto start_msg = std_msgs::msg::Bool();
-    start_msg.data = true;
-    start_pub_->publish(start_msg);
-
-    RCLCPP_INFO(this->get_logger(), "Published Speed: %d, Start: %s",
-                speed_msg.data, start_msg.data ? "true" : "false");
-  }
-
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr transition_event_sub_;
-  rclcpp::Publisher<std_msgs::msg::Int32>::SharedPtr speed_pub_;
-  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr start_pub_;
+  rclcpp::Publisher<lbr_fri_idl::msg::SpindleControl>::SharedPtr spindle_command_publisher_;
   rclcpp::TimerBase::SharedPtr timer_;
 };
 
-int main(int argc, char * argv[])
+int main(int argc, char *argv[])
 {
+  // 初始化 ROS2
   rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<IoCommandControllerNode>());
+
+  // 创建并运行节点
+  rclcpp::spin(std::make_shared<GpioCommandPublisher>());
+
+  // 清理 ROS2
   rclcpp::shutdown();
   return 0;
 }

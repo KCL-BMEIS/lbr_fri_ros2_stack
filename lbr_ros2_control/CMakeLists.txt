@@ -37,8 +37,8 @@ add_library(
   src/controllers/lbr_wrench_command_controller.cpp
   src/controllers/lbr_state_broadcaster.cpp
   src/controllers/twist_controller.cpp
-  src/controllers/io_command_controller.cpp
   src/system_interface.cpp
+  src/controllers/gpio_controller.cpp
 )
 
 # Add include directories

@@ -78,8 +78,8 @@ Full documentation available on [Read the Docs](https://lbr-stack.readthedocs.io
     ```shell
     source install/setup.bash
     ros2 launch lbr_bringup rviz.launch.py \
-        rviz_config_pkg:=lbr_bringup \
-        rviz_config:=config/mock.rviz
+        rviz_cfg_pkg:=lbr_bringup \
+        rviz_cfg:=config/mock.rviz
     ```
 
 Now, run the [demos](https://lbr-stack.readthedocs.io/en/latest/lbr_fri_ros2_stack/lbr_demos/doc/lbr_demos.html). To get started with the real robot, checkout the [Hardware Setup](https://lbr-stack.readthedocs.io/en/latest/lbr_fri_ros2_stack/lbr_fri_ros2_stack/doc/hardware_setup.html).
@@ -88,13 +88,17 @@ Now, run the [demos](https://lbr-stack.readthedocs.io/en/latest/lbr_fri_ros2_sta
 If you enjoyed using this repository for your work, we would really appreciate ❤️ if you could leave a ⭐ and / or cite it, as it helps us to continue offering support.
 
 ```
-@misc{huber2023lbrstack,
-      title={LBR-Stack: ROS 2 and Python Integration of KUKA FRI for Med and IIWA Robots}, 
-      author={Martin Huber and Christopher E. Mower and Sebastien Ourselin and Tom Vercauteren and Christos Bergeles},
-      year={2023},
-      eprint={2311.12709},
-      archivePrefix={arXiv},
-      primaryClass={cs.RO}
+@article{Huber2024,
+  doi       = {10.21105/joss.06138},
+  url       = {https://doi.org/10.21105/joss.06138},
+  year      = {2024},
+  publisher = {The Open Journal},
+  volume    = {9},
+  number    = {103},
+  pages     = {6138},
+  author    = {Martin Huber and Christopher E. Mower and Sebastien Ourselin and Tom Vercauteren and Christos Bergeles},
+  title     = {LBR-Stack: ROS 2 and Python Integration of KUKA FRI for Med and IIWA Robots},
+  journal   = {Journal of Open Source Software}
 }
 ```
 

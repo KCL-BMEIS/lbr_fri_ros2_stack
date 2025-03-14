@@ -1,6 +1,41 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package LBR FRI ROS 2 Stack
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Humble v2.2.0 (2024-11-20)
+--------------------------
+This release backports new ``rolling`` features to ``humble``. Following has changed:
+
+* Related PRs:
+
+  * https://github.com/lbr-stack/lbr_fri_ros2_stack/pull/213 and https://github.com/lbr-stack/lbr_fri_ros2_stack/pull/214
+
+    * Joints and links are now prefixed with ``lbr_`` (i.e. the robot name)
+    * Robot state publisher has no ``lbr/`` prefix anymore
+    * Asynchronous + deactivateable force-torque estimation from external torques (previously synchronous)
+    * Issue with setting real-time priority fixed
+    * Modifiable source for ``lbr_system_config.yaml`` in launch files
+
+  * https://github.com/lbr-stack/lbr_fri_ros2_stack/pull/220
+
+    * PID on joint position commands replaced by simpler exponential filter (please test robot in T1 mode as this will affect your control)
+    * Introduction of twist and admittance controllers
+    * Configurations from ``lbr_ros2_control`` now in ``lbr_description`` (for stand alone URDF use)
+
+Humble v2.1.2 (2024-10-18)
+--------------------------
+* Adds MoveIt Servo demo, related to https://github.com/lbr-stack/lbr_fri_ros2_stack/issues/50 and https://github.com/lbr-stack/lbr_fri_ros2_stack/issues/211
+
+  * ``lbr_bringup``: New launch mixin and launch file for MoveIt Servo
+  * ``lbr_moveit``: New keyboard driver to interface with MoveIt Servo
+
+Humble v2.1.1 (2024-09-27)
+--------------------------
+* Adds support for the new Gazebo and removes support for Gazebo Classic (End-of-Life January 2025, refer https://community.gazebosim.org/t/gazebo-classic-end-of-life/2563).
+
+  * ``lbr_bringup``: Updated launch files and dependencies.
+  * ``lbr_description``: Updated ``<gazebo>`` tag to include Gazebo plugin (see https://github.com/ros-controls/gz_ros2_control/tree/humble). 
+  * ``lbr_ros2_control``: Changed ``gazebo_ros2_control/GazeboSystem`` -> ``ign_ros2_control/IgnitionSystem```
+
 Humble v2.1.0 (2024-09-10)
 --------------------------
 * De-couple launch files from ``lbr_bringup`` for easier customization (breaking change):

@@ -6,9 +6,7 @@
 #include "lbr_fri_idl/msg/lbr_joint_position_command.hpp"
 #include "lbr_fri_idl/msg/lbr_torque_command.hpp"
 #include "lbr_fri_idl/msg/lbr_wrench_command.hpp"
-#include "lbr_fri_idl/msg/lbr_state.hpp"  // 新增：包含 LBRState 消息
 
-// 测试原有消息中关节位置、力矩、力/扭矩数组的尺寸
 TEST(lbr_fri_idl, test_command_size) {
   using namespace KUKA::FRI;
 
@@ -27,7 +25,6 @@ TEST(lbr_fri_idl, test_command_size) {
   EXPECT_EQ(lbr_wrench_command.joint_position.size(), LBRState::NUMBER_OF_JOINTS);
   EXPECT_EQ(lbr_wrench_command.wrench.size(), 6);
 }
-
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

@@ -71,6 +71,12 @@ controller_interface::return_type LBRStateBroadcaster::update(const rclcpp::Time
     rt_state_publisher_ptr_->msg_.tracking_performance =
         state_interface_map_[HW_IF_AUXILIARY_PREFIX][HW_IF_TRACKING_PERFORMANCE];
 
+    // 新增：写入主轴 IO 状态
+    rt_state_publisher_ptr_->msg_.spindle_speed =
+        state_interface_map_[HW_IF_AUXILIARY_PREFIX]["Spindle.Speed"];
+    rt_state_publisher_ptr_->msg_.spindle_start =
+        static_cast<bool>(state_interface_map_[HW_IF_AUXILIARY_PREFIX]["Spindle.Start"]);
+
     // joint related states
     std::for_each(joint_names_.begin(), joint_names_.end(),
                   [&, idx = 0](const std::string &joint_name) mutable {
@@ -150,6 +156,10 @@ void LBRStateBroadcaster::init_state_msg_() {
   rt_state_publisher_ptr_->msg_.time_stamp_nano_sec = std::numeric_limits<uint32_t>::quiet_NaN();
   rt_state_publisher_ptr_->msg_.time_stamp_sec = std::numeric_limits<uint32_t>::quiet_NaN();
   rt_state_publisher_ptr_->msg_.tracking_performance = std::numeric_limits<double>::quiet_NaN();
+
+   // 新增：初始化主轴状态字段
+  rt_state_publisher_ptr_->msg_.spindle_speed = std::numeric_limits<double>::quiet_NaN();
+  rt_state_publisher_ptr_->msg_.spindle_start = 0;
 }
 
 void LBRStateBroadcaster::configure_joint_names_() {

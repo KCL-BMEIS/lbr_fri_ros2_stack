@@ -1,0 +1,2 @@
+float64 spindle_speed
+float64 spindle_start

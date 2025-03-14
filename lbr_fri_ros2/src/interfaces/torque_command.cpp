@@ -53,8 +53,19 @@ void TorqueCommandInterface::buffered_command_to_fri(fri_command_t_ref command,
                         ColorScheme::ERROR << err.c_str() << ColorScheme::ENDC);
     throw std::runtime_error(err);
   }
+
+    // 新增调试输出：打印 command_target_ 中的 spindle_speed 和 spindle_start
+  RCLCPP_ERROR_STREAM(rclcpp::get_logger(LOGGER_NAME()),
+                      ColorScheme::ERROR <<"Command target: Spindle Speed: " << command_target_.spindle_speed
+                      << ", Spindle Start: " << command_target_.spindle_start << ColorScheme::ENDC);
+
+  command_.spindle_speed = command_target_.spindle_speed;
+  command_.spindle_start = command_target_.spindle_start;
+
   // write joint position and torque to output
   command.setJointPosition(command_.joint_position.data());
   command.setTorque(command_.torque.data());
+  command.setAnalogIOValue("Spindle.Speed",command_.spindle_speed);
+  command.setBooleanIOValue("Spindle.Start",static_cast<bool>(command_.spindle_start));
 }
 } // namespace lbr_fri_ros2

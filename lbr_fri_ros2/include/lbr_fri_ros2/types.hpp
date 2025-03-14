@@ -24,6 +24,9 @@ using jnt_name_array_t = std::array<std::string, N_JNTS>;
 using jnt_name_array_t_ref = jnt_name_array_t &;
 using const_jnt_name_array_t_ref = const jnt_name_array_t &;
 
+// gpio names
+using gpio_name_array_t = std::array<std::string, 2>;
+
 // Cartesian DoF
 constexpr std::uint8_t CARTESIAN_DOF = 6;
 

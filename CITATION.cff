@@ -19,6 +19,6 @@ authors:
 
 
 title: "LBR-Stack: ROS 2 and Python Integration of KUKA FRI for Med and IIWA Robots"
-version: 2.1.0
-doi: 10.48550/arXiv.2311.12709
-date-released: 2024-09-10
+version: 2.2.0
+doi: 10.21105/joss.06138
+date-released: 2024-11-20

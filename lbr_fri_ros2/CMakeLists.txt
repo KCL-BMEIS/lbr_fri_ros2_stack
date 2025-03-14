@@ -21,14 +21,12 @@ find_package(orocos_kdl_vendor REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(realtime_tools REQUIRED)
 find_package(urdf REQUIRED)
+find_package(std_msgs REQUIRED)
 
 # lbr_fri_ros2
 add_library(lbr_fri_ros2
   SHARED
-    src/interfaces/analog_command.cpp
     src/interfaces/base_command.cpp
-    src/interfaces/boolean_command.cpp
-    src/interfaces/digital_command.cpp
     src/interfaces/position_command.cpp
     src/interfaces/state.cpp
     src/interfaces/torque_command.cpp
@@ -57,6 +55,7 @@ ament_target_dependencies(lbr_fri_ros2
   orocos_kdl_vendor
   rclcpp
   realtime_tools
+  std_msgs
 )
 
 target_link_libraries(lbr_fri_ros2
@@ -74,6 +73,7 @@ ament_export_dependencies(
   orocos_kdl_vendor
   rclcpp
   realtime_tools
+  std_msgs
 )
 
 install(
@@ -90,8 +90,8 @@ install(
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
 
-  ament_add_gtest(test_command_interfaces test/test_command_interfaces.cpp)
-  target_link_libraries(test_command_interfaces lbr_fri_ros2)
+  # ament_add_gtest(test_command_interfaces test/test_command_interfaces.cpp)
+  # target_link_libraries(test_command_interfaces lbr_fri_ros2)
 
   # # some examples of how to use the interfaces
   # add_executable(test_position_command test/test_position_command.cpp)

@@ -164,9 +164,6 @@ protected:
 
   // exposed command interfaces
   lbr_fri_idl::msg::LBRCommand hw_lbr_command_;
-
-   // 新增：用于存储 IO 命令（顺序对应 xacro 中的定义：analog_io_1, analog_io_2, boolean_io_1, boolean_io_2, digital_io_1, digital_io_2）
-   std::array<double, 6> io_command_;
 };
 } // namespace lbr_ros2_control
 #endif // LBR_ROS2_CONTROL__SYSTEM_INTERFACE_HPP_

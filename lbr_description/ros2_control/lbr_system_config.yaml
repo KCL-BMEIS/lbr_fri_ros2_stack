@@ -10,16 +10,16 @@ hardware:
   # exponential moving average time constant for joint position commands [s]:
   #   set tau > robot sample time for more smoothing on the commands
   #   set tau << robot sample time for no smoothing on the commands
-  joint_position_tau: 0.04
+  joint_position_tau: 0.01
   command_guard_variant: default # if requested position / velocities beyond limits, CommandGuard will be triggered and shut the connection. Available: [default, safe_stop]
   # exponential moving average time constant for external joint torque measurements [s]:
   #   set tau > robot sample time for more smoothing on the external torque measurements
   #   set tau << robot sample time for no smoothing on the external torque measurements
-  external_torque_tau: 0.04
+  external_torque_tau: 0.01
   # exponential moving average time constant for joint torque measurements [s]:
   #   set tau > robot sample time for more smoothing on the raw torque measurements
   #   set tau << robot sample time for no smoothing on the raw torque measurements
-  measured_torque_tau: 0.04
+  measured_torque_tau: 0.01
   # for position control, LBR works best in open_loop control mode
   # note that open_loop is overridden to false if LBR is in impedance or Cartesian impedance control mode
   open_loop: true

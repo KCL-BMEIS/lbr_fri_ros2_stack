@@ -10,9 +10,5 @@ float64[7] joint_position
 float64[7] torque
 float64[6] wrench
 
-string[2] analog_io_names
-float64[2] analog_io_values 
-string[2] boolean_io_names   
-bool[2] boolean_io_values  
-string[2] digital_io_names
-uint64[2] digital_io_values 
+float64 spindle_speed
+float64 spindle_start
